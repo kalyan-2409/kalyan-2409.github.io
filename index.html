@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" href="hark.css" />
     <link rel="stylesheet" href="hark-hero.css" />
+    <link rel="stylesheet" href="hark-charts.css" />
     <style>
       .x-calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
       .x-panel { display: grid; gap: 18px; padding: 22px 24px; border-radius: var(--r-m); background: var(--fill-tertiary); }
@@ -58,6 +59,88 @@
       .x-gal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
       .x-gal figure { margin: 0; }
       .x-gal img { width: 100%; height: auto; border-radius: var(--r-m); background: var(--fill-tertiary); }
+      /* Eligibility checker */
+      .x-q { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+      .x-q legend { font: var(--type-label); color: var(--text-primary); padding: 0; margin-bottom: 8px; }
+      .x-q legend small { display: block; font: var(--type-caption); color: var(--text-secondary); margin-top: 2px; }
+      .x-group { font: var(--type-heading); padding-top: 4px; }
+      .x-block { display: grid; gap: 18px; }
+      .x-block[hidden], .x-res[hidden], .x-auth[hidden], .x-modal[hidden], .x-authform[hidden], .x-note-box[hidden], .x-badge[hidden], .x-actions[hidden] { display: none; }
+      .x-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+      .x-opts--col { flex-direction: column; }
+      .x-opt {
+        display: inline-flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 8px 14px;
+        border: 1px solid var(--stroke-primary); border-radius: var(--r-pill); background: var(--fill-primary-on);
+        font: var(--type-label); color: var(--text-primary); cursor: pointer;
+      }
+      .x-opts--col .x-opt { border-radius: var(--r-s); }
+      .x-opt input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--fill-primary); }
+      .x-opt:has(input:checked) { border-color: var(--text-primary); box-shadow: inset 0 0 0 1px var(--text-primary); }
+      .x-results { display: grid; gap: 16px; }
+      .x-sum { padding: 18px 20px; border-radius: var(--r-m); background: var(--fill-primary); color: var(--text-primary-on); font: var(--type-body-strong); }
+      .x-res { display: grid; gap: 14px; padding: 22px 24px; border-radius: var(--r-m); border: 1px solid var(--stroke-secondary); }
+      .x-res__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 12px; }
+      .x-res h3 { font: var(--type-heading); }
+      .x-res h3 small { display: block; font: var(--type-caption); color: var(--text-secondary); margin-top: 2px; }
+      .x-res h4 { font: var(--type-label); margin-bottom: 4px; }
+      .x-res ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: var(--size-small); }
+      .x-res p { font-size: var(--size-small); }
+      .x-badge {
+        display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: var(--r-pill);
+        font: var(--type-tag); background: var(--fill-tertiary); color: var(--text-secondary); white-space: nowrap;
+      }
+      .x-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px var(--text-tertiary); }
+      .x-badge[data-s="ok"] { background: var(--fill-primary); color: var(--text-primary-on); }
+      .x-badge[data-s="ok"]::before { background: var(--fill-system-green); box-shadow: none; }
+      .x-badge[data-s="no"] { color: var(--text-primary); }
+      .x-badge[data-s="no"]::before { background: var(--fill-system-red); box-shadow: none; }
+      .x-badge[data-s="check"] { color: var(--text-primary); }
+      .x-badge[data-s="check"]::before { background: var(--fill-system-orange); box-shadow: none; }
+      .x-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .x-figs > div { display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--r-s); background: var(--fill-tertiary); }
+      .x-figs span { font-size: var(--size-caption); color: var(--text-secondary); }
+      .x-figs b { font: var(--type-heading); font-variant-numeric: tabular-nums; }
+      .x-note-box { padding: 12px 14px; border-radius: var(--r-s); background: var(--fill-tertiary); font-size: var(--size-small); }
+      .x-comp { display: grid; gap: 4px; padding-top: 12px; border-top: 1px solid var(--stroke-secondary); }
+      .x-bar { display: flex; height: 14px; border-radius: var(--r-pill); overflow: hidden; background: var(--fill-tertiary); }
+      .x-bar span { display: block; height: 100%; }
+      .x-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--size-caption); color: var(--text-secondary); }
+      .x-key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+      .x-c1 { background: var(--chart-2); } .x-c2 { background: var(--chart-1); } .x-c3 { background: var(--chart-3); }
+      .x-msg { font-size: var(--size-small); color: var(--text-secondary); }
+      .x-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+      .x-actions button.btn, .x-saved button.btn, .x-authform button.btn { font: var(--type-tag); cursor: pointer; }
+      /* Saved checks */
+      .x-saved { list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+      .x-saved li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 14px 0; border-bottom: 1px solid var(--stroke-secondary); }
+      .x-saved li:last-child { border-bottom: 0; }
+      .x-saved li > div:first-child { flex: 1 1 260px; min-width: 0; }
+      .x-saved b { font-weight: var(--weight-bold); }
+      .x-saved small { display: block; font-size: var(--size-caption); color: var(--text-secondary); margin-top: 2px; }
+      /* Account in the nav and the sign-in dialog */
+      .x-acct { display: flex; align-items: center; gap: 6px; flex: none; }
+      .x-hi { font: var(--type-label); color: var(--text-primary-on); max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 6px; }
+      .x-login {
+        flex: none; min-height: 36px; padding: 6px 14px; border: 0; border-radius: var(--r-pill);
+        background: var(--fill-primary-on); color: var(--text-primary); font: var(--type-label); cursor: pointer; white-space: nowrap;
+      }
+      .x-login:hover { box-shadow: inset 0 0 0 100px var(--hover-wash); }
+      .x-modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 0.45); overflow-y: auto; }
+      .x-modal__box {
+        width: min(100%, 420px); display: grid; gap: 16px; padding: 22px 24px; border-radius: var(--r-l);
+        background: var(--fill-primary-on); color: var(--text-primary); box-shadow: var(--hark-shadow); border: 1px solid var(--stroke-secondary);
+      }
+      .x-modal__box h2 { font: var(--type-heading); }
+      .x-close { width: var(--tap); height: var(--tap); border: 0; border-radius: 50%; background: var(--fill-tertiary); color: var(--text-primary); font: var(--type-heading); cursor: pointer; }
+      .x-authform { display: grid; gap: 14px; }
+      .x-authform input[type="password"] {
+        font: var(--type-body); color: var(--text-primary); background: var(--fill-primary-on);
+        border: 1px solid var(--stroke-primary); border-radius: var(--r-s); padding: 10px 12px; min-height: var(--tap); width: 100%;
+      }
+      .x-err { font-size: var(--size-small); color: var(--fill-system-red); }
+      .x-err:empty { display: none; }
+      @media (pointer: coarse), (max-width: 599px) { .x-login { min-height: var(--tap); } }
+      @media (max-width: 599px) { .x-hi { max-width: 6em; } .x-res { padding: 18px; } }
       @media (max-width: 899px) { .x-calc { grid-template-columns: 1fr; } .x-gal { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
       @media (max-width: 599px) { .x-gal { grid-template-columns: 1fr; } .x-out { gap: 8px; } .x-out > div { padding: 14px 16px; } .x-out b { font-size: 24px; } }
     </style>
@@ -79,6 +162,7 @@
             <p class="callout__lead"><strong>How much would rooftop solar save you?</strong> See your plant size, subsidy and payback.</p>
             <div class="links">
               <a class="btn" href="#calculator">Calculate your solar savings</a>
+              <a class="btn" href="#eligibility">Check eligibility</a>
               <a class="btn" href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener">Apply on PM Surya Ghar</a>
             </div>
           </aside>
@@ -150,8 +234,216 @@
               </div>
               <p class="fineprint" style="margin-top: 12px">Generation is taken as about 120 units per kW per month: approximate; actual output depends on sunlight and panel condition.</p>
               <p class="fineprint">Estimates for awareness only. Rates from pmsuryaghar.gov.in; costs vary by vendor.</p>
+              <div class="x-auth x-actions" id="calc-save-wrap" hidden style="margin-top: 12px">
+                <button type="button" class="btn" id="calc-save">Save my result</button>
+                <span class="x-msg" id="calc-save-msg" role="status"></span>
+              </div>
             </div>
           </div>
+        </section>
+
+        <section class="section" id="eligibility" data-nav="Eligibility">
+          <div class="head">
+            <p class="head__eyebrow">Scheme eligibility checker</p>
+            <h2>Am I eligible? Scheme checker</h2>
+            <p class="head__sub">Answer a few questions; your result updates as you go. Monthly units are shared with the calculator above.</p>
+          </div>
+          <div class="x-calc">
+            <form class="x-panel" id="elig" onsubmit="return false">
+              <div class="x-try">
+                <button type="button" class="btn" id="el-sample-home">Sample: village family</button>
+                <button type="button" class="btn" id="el-sample-farm">Sample: farmer with diesel pump</button>
+                <button type="button" class="btn" id="el-reset">Reset</button>
+              </div>
+              <fieldset class="x-q">
+                <legend>Step 1: Who are you? <small>Choose one or more</small></legend>
+                <div class="x-opts">
+                  <label class="x-opt"><input type="checkbox" id="who-home" value="home" /> Household (home)</label>
+                  <label class="x-opt"><input type="checkbox" id="who-farm" value="farm" /> Farmer</label>
+                </div>
+              </fieldset>
+
+              <div class="x-block" id="el-home" hidden>
+                <p class="x-group">Household questions</p>
+                <fieldset class="x-q">
+                  <legend>H1. Are you an Indian citizen?</legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="h1" id="h1-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="h1" id="h1-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+                <fieldset class="x-q">
+                  <legend>H2. Do you own the house?</legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="h2" id="h2-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="h2" id="h2-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+                <fieldset class="x-q">
+                  <legend>H3. Is the roof (terrace or balcony) strong, sunny and big enough? <small>About 10 square metres per kW (approximate)</small></legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="h3" id="h3-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="h3" id="h3-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+                <fieldset class="x-q">
+                  <legend>H4. Do you have a valid residential (domestic) electricity connection in your name, with a consumer number?</legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="h4" id="h4-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="h4" id="h4-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+                <fieldset class="x-q">
+                  <legend>H5. Have you already taken any government subsidy for rooftop solar?</legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="h5" id="h5-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="h5" id="h5-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+                <div class="x-field">
+                  <label for="el-units">H6. Monthly units used (kWh)</label>
+                  <input type="text" id="el-units" value="200" inputmode="decimal" autocomplete="off" />
+                  <small>Shared with the calculator: change it here or there.</small>
+                </div>
+              </div>
+
+              <div class="x-block" id="el-farm" hidden>
+                <p class="x-group">Farmer questions</p>
+                <fieldset class="x-q">
+                  <legend>F1. What pump do you have?</legend>
+                  <div class="x-opts x-opts--col">
+                    <label class="x-opt"><input type="radio" name="f1" id="f1-off" value="off" /> Diesel pump / no electricity at the farm (off-grid)</label>
+                    <label class="x-opt"><input type="radio" name="f1" id="f1-grid" value="grid" /> Electric pump with grid connection</label>
+                    <label class="x-opt"><input type="radio" name="f1" id="f1-none" value="none" /> No pump</label>
+                  </div>
+                </fieldset>
+                <div class="x-field">
+                  <label for="el-hp">F2. Pump size, HP</label>
+                  <input type="text" id="el-hp" value="5" inputmode="decimal" autocomplete="off" />
+                </div>
+                <fieldset class="x-q">
+                  <legend>F3. Do you have unused or barren land and want to set up a solar plant (500 kW to 2 MW)?</legend>
+                  <div class="x-opts">
+                    <label class="x-opt"><input type="radio" name="f3" id="f3-yes" value="yes" /> Yes</label>
+                    <label class="x-opt"><input type="radio" name="f3" id="f3-no" value="no" /> No</label>
+                  </div>
+                </fieldset>
+              </div>
+            </form>
+
+            <div class="x-results" aria-live="polite">
+              <p class="x-sum" id="el-sum">Pick Household, Farmer or both to see your result.</p>
+
+              <article class="x-res" id="card-psg" hidden>
+                <div class="x-res__head">
+                  <h3>PM Surya Ghar: Muft Bijli Yojana <small>Rooftop solar for homes</small></h3>
+                  <span class="x-badge" id="psg-badge"></span>
+                </div>
+                <div class="x-block" id="psg-body"></div>
+                <div>
+                  <h4>Good to know</h4>
+                  <ul>
+                    <li>The subsidy is paid straight to your bank account (DBT).</li>
+                    <li>Panels must be made in India (ALMM list) and fitted by a registered vendor.</li>
+                    <li>Collateral-free loans at about 7% interest are available for systems up to 3 kW.</li>
+                    <li>With net metering, extra units go to the grid.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>What you need to apply</h4>
+                  <ul>
+                    <li>Registered mobile number</li>
+                    <li>Electricity consumer account number</li>
+                    <li>Bank account</li>
+                    <li>Email and address</li>
+                  </ul>
+                </div>
+                <div class="links"><a class="btn" href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener">Apply at pmsuryaghar.gov.in</a></div>
+              </article>
+
+              <article class="x-res" id="card-kusum" hidden>
+                <div class="x-res__head">
+                  <h3>PM-KUSUM <small>Solar pumps and plants for farmers</small></h3>
+                  <span class="x-badge" id="kusum-badge"></span>
+                </div>
+                <p class="x-note-box"><strong>Status:</strong> PM-KUSUM phase 1 closed for new projects on 31-03-2026. PM-KUSUM 2.0 has been announced by the Ministry but not launched yet (as of November 2026). Check with NREDCAP (A.P. state agency) before applying.</p>
+                <div class="x-block" id="kusum-body"></div>
+                <div class="x-comp">
+                  <h4>Pump cost share calculator</h4>
+                  <div class="x-field">
+                    <label for="el-pump">Pump system cost, ₹</label>
+                    <input type="text" id="el-pump" value="3,00,000" inputmode="decimal" autocomplete="off" />
+                    <small>Example only; the actual cost comes from the tender.</small>
+                  </div>
+                  <div class="x-figs" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+                    <div><span>Centre 30%</span><b id="pc-centre">₹90,000</b></div>
+                    <div><span>State 30%</span><b id="pc-state">₹90,000</b></div>
+                    <div><span>Farmer 40%</span><b id="pc-farmer">₹1,20,000</b></div>
+                  </div>
+                  <div class="x-bar" role="img" aria-label="Centre 30%, State 30%, Farmer 40%">
+                    <span class="x-c1" style="width: 30%"></span><span class="x-c2" style="width: 30%"></span><span class="x-c3" style="width: 40%"></span>
+                  </div>
+                  <p class="x-key"><span><i class="x-c1"></i>Centre</span><span><i class="x-c2"></i>State</span><span><i class="x-c3"></i>Farmer</span></p>
+                  <p class="fineprint" id="pc-loan">Of the farmer's share, about ₹30,000 is paid upfront and up to ₹90,000 can be a bank loan.</p>
+                </div>
+              </article>
+
+              <div class="x-auth x-actions" id="el-save-wrap" hidden>
+                <button type="button" class="btn" id="el-save">Save my result</button>
+                <span class="x-msg" id="el-save-msg" role="status"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="x-auth x-block" id="saved-panel" hidden>
+            <h3 class="x-group">My saved checks</h3>
+            <ul class="x-saved" id="saved-list"></ul>
+            <p class="fineprint" id="saved-mem" hidden>Login is saved only on this device's browser.</p>
+          </div>
+        </section>
+
+        <section class="section" id="method">
+          <div class="head">
+            <p class="head__eyebrow">Method</p>
+            <h2>How the numbers are calculated</h2>
+            <p class="head__sub">The same rules drive the calculator and the checker.</p>
+          </div>
+          <div class="pair">
+            <div class="breakdown">
+              <dl>
+                <div class="row"><dt>0–150 units a month</dt><dd>1–2 kW</dd></div>
+                <div class="row"><dt>150–300 units</dt><dd>2–3 kW</dd></div>
+                <div class="row"><dt>Above 300 units</dt><dd>3 kW+</dd></div>
+              </dl>
+              <p class="fineprint">Plant size, from PM Surya Ghar portal guidance.</p>
+            </div>
+            <div class="breakdown">
+              <dl>
+                <div class="row"><dt>1 kW</dt><dd>₹30,000</dd></div>
+                <div class="row"><dt>2 kW</dt><dd>₹60,000</dd></div>
+                <div class="row"><dt>3 kW or more</dt><dd>₹78,000</dd></div>
+              </dl>
+              <p class="fineprint">Subsidy: ₹30,000 per kW up to 2 kW, ₹18,000 for the 3rd kW, capped at ₹78,000.</p>
+            </div>
+          </div>
+          <div class="prose">
+            <p><strong>Generation:</strong> about 120 units per kW per month (approximate).</p>
+            <p><strong>Monthly saving</strong> = the smaller of (generation, usage) × tariff. <strong>Payback</strong> = net cost ÷ yearly saving.</p>
+          </div>
+          <h3 class="x-group">Worked example: 200 units, ₹6 per unit, ₹60,000 per kW</h3>
+          <div class="breakdown">
+            <dl>
+              <div class="row"><dt>Plant size <small>200 units is in the 150–300 band</small></dt><dd>2 kW</dd></div>
+              <div class="row"><dt>Subsidy <small>2 × ₹30,000</small></dt><dd>₹60,000</dd></div>
+              <div class="row"><dt>Net cost <small>2 × ₹60,000 − ₹60,000</small></dt><dd>₹60,000</dd></div>
+              <div class="row"><dt>Monthly saving <small>Makes 240 units, uses 200: 200 × ₹6</small></dt><dd>₹1,200</dd></div>
+              <div class="row row--total"><dt>Payback <small>₹60,000 ÷ ₹14,400 a year</small></dt><dd>4.2 years</dd></div>
+            </dl>
+          </div>
+          <div class="prose">
+            <p><strong>Sources:</strong> <a class="link" href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener">pmsuryaghar.gov.in</a>, PIB (1 March 2024), <a class="link" href="https://pmkusum.mnre.gov.in/" target="_blank" rel="noopener">MNRE PM-KUSUM page</a>, MNRE office memo (28 Sep 2026).</p>
+          </div>
+          <p class="fineprint">Awareness tool built by students; final eligibility is decided by the DISCOM and scheme officials.</p>
         </section>
 
         <section class="section" id="schemes" data-nav="Schemes">
@@ -329,9 +621,60 @@
       </main>
       <footer class="foot">
         <p>Community Service Project, Dept. of CSE, Lakireddy Bali Reddy College of Engineering (Autonomous), Mylavaram, affiliated to JNTUK. Guide: Mr. D. Anil Kumar, Sr. Assistant Professor, Dept. of CSE. Supports SDG 7 (Affordable and Clean Energy) and SDG 13 (Climate Action).</p>
+        <p>Demo login for the student project; data stays in your browser.</p>
         <nav aria-label="Back to sections" data-auto></nav>
         <a class="badge" href="https://hark.com/" target="_blank" rel="noopener"><span class="hark-mark"></span><span>built by hark</span></a>
       </footer>
+    </div>
+    <div class="x-modal" id="auth-modal" hidden>
+      <div class="x-modal__box" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="x-row">
+          <h2 id="auth-title">Your account</h2>
+          <button type="button" class="x-close" id="auth-close" aria-label="Close">×</button>
+        </div>
+        <div class="x-seg" role="tablist" aria-label="Account">
+          <button type="button" role="tab" id="tab-login" aria-pressed="true" aria-selected="true">Login</button>
+          <button type="button" role="tab" id="tab-signup" aria-pressed="false" aria-selected="false">Sign up</button>
+        </div>
+        <form class="x-authform" id="form-login" novalidate>
+          <div class="x-field">
+            <label for="li-id">Mobile or email</label>
+            <input type="text" id="li-id" autocomplete="username" />
+          </div>
+          <div class="x-field">
+            <label for="li-pw">Password</label>
+            <input type="password" id="li-pw" autocomplete="current-password" />
+          </div>
+          <p class="x-err" id="li-err" role="alert"></p>
+          <div class="x-actions"><button type="submit" class="btn" id="li-go">Login</button></div>
+        </form>
+        <form class="x-authform" id="form-signup" novalidate hidden>
+          <div class="x-field">
+            <label for="su-name">Full name</label>
+            <input type="text" id="su-name" autocomplete="name" />
+          </div>
+          <div class="x-field">
+            <label for="su-id">Mobile or email</label>
+            <input type="text" id="su-id" autocomplete="username" />
+          </div>
+          <div class="x-field">
+            <label for="su-pw">Password <small>(at least 6 characters)</small></label>
+            <input type="password" id="su-pw" autocomplete="new-password" />
+          </div>
+          <div class="x-field">
+            <label for="su-pw2">Confirm password</label>
+            <input type="password" id="su-pw2" autocomplete="new-password" />
+          </div>
+          <div class="x-field">
+            <label for="su-village">Village</label>
+            <input type="text" id="su-village" value="Chandragudem" />
+          </div>
+          <p class="x-err" id="su-err" role="alert"></p>
+          <div class="x-actions"><button type="submit" class="btn" id="su-go">Create account</button></div>
+        </form>
+        <p class="fineprint" id="auth-mem" hidden>Login is saved only on this device's browser.</p>
+        <p class="fineprint">Demo login for the student project; data stays in your browser.</p>
+      </div>
     </div>
     <script src="hark.js"></script>
     <script>
@@ -410,7 +753,47 @@
           var snap = [mode, units, tariff, kw, num($("cost"))].join("|");
           if (last !== null && snap !== last) flash();
           last = snap;
+          lastResult = { units: units, tariff: tariff, kw: kw, suggested: s.kw, sub: sub, net: net, monthly: monthly, yearly: yearly, payback: yearly > 0 ? net / yearly : 0, life: life };
+          for (var i = 0; i < listeners.length; i++) {
+            try { listeners[i](units); } catch (e) { if (window.console) console.error("Calculator listener failed", e); }
+          }
         }
+        var listeners = [];
+        var lastResult = null;
+
+        function labels() {
+          $("mode-toggle").setAttribute("aria-pressed", mode === "bill" ? "true" : "false");
+          $("mode-toggle").textContent = mode === "units" ? "Enter bill in ₹ instead" : "Enter units instead";
+          $("usage-lbl").textContent = mode === "units" ? "Average monthly use, units (kWh)" : "Average monthly bill, ₹";
+        }
+
+        // Shared with the eligibility checker and the saved checks.
+        window.xCalc = {
+          suggest: suggest,
+          subsidy: subsidy,
+          num: num,
+          units: function () { var t = num($("tariff")), v = num($("usage")); return mode === "units" ? v : (t ? v / t : 0); },
+          tariff: function () { return num($("tariff")); },
+          cost: function () { return num($("cost")); },
+          setUnits: function (u) {
+            var t = num($("tariff"));
+            $("usage").value = mode === "units" ? Math.round(u * 100) / 100 : Math.round(u * t);
+            update();
+          },
+          getState: function () { return { mode: mode, usage: $("usage").value, tariff: $("tariff").value, cost: $("cost").value, kw: override }; },
+          setState: function (s) {
+            if (!s) return;
+            mode = s.mode === "bill" ? "bill" : "units";
+            labels();
+            $("usage").value = s.usage;
+            $("tariff").value = s.tariff;
+            $("cost").value = s.cost;
+            override = s.kw ? parseInt(s.kw, 10) || null : null;
+            update();
+          },
+          result: function () { return lastResult; },
+          onChange: function (fn) { listeners.push(fn); }
+        };
 
         function fill(units) {
           if (mode !== "units") {
@@ -457,6 +840,543 @@
       }
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", xCalcSetup);
       else xCalcSetup();
+    </script>
+    <script>
+      /* ---------- Demo accounts: storage, hashing, session ---------- */
+      var xAuth = (function () {
+        var mem = {};
+        var memMode = false;
+        try {
+          localStorage.setItem("csp_probe", "1");
+          localStorage.removeItem("csp_probe");
+        } catch (e) { memMode = true; }
+        var changeFns = [];
+
+        function sget(k) {
+          if (!memMode) {
+            try { return localStorage.getItem(k); } catch (e) { memMode = true; }
+          }
+          return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null;
+        }
+        function sset(k, v) {
+          mem[k] = v;
+          if (!memMode) {
+            try { localStorage.setItem(k, v); } catch (e) { memMode = true; }
+          }
+        }
+        function sdel(k) {
+          delete mem[k];
+          if (!memMode) {
+            try { localStorage.removeItem(k); } catch (e) { memMode = true; }
+          }
+        }
+        function users() {
+          try { var u = JSON.parse(sget("csp_users") || "{}"); return u && typeof u === "object" ? u : {}; } catch (e) { return {}; }
+        }
+        function saveUsers(u) {
+          try { sset("csp_users", JSON.stringify(u)); } catch (e) { if (window.console) console.error("Could not save users", e); }
+        }
+
+        // Pure-JS SHA-256, used when crypto.subtle is missing (non-secure pages).
+        function sha256js(str) {
+          var s = unescape(encodeURIComponent(str));
+          var K = [], H = [], primes = [], cand = 2;
+          var frac = function (x) { return ((x - Math.floor(x)) * 4294967296) | 0; };
+          while (primes.length < 64) {
+            var isP = true;
+            for (var p = 0; p < primes.length && primes[p] * primes[p] <= cand; p++) if (cand % primes[p] === 0) { isP = false; break; }
+            if (isP) {
+              if (primes.length < 8) H.push(frac(Math.pow(cand, 1 / 2)));
+              K.push(frac(Math.pow(cand, 1 / 3)));
+              primes.push(cand);
+            }
+            cand++;
+          }
+          var bytes = [];
+          for (var i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i) & 255);
+          var len = bytes.length;
+          bytes.push(0x80);
+          while (bytes.length % 64 !== 56) bytes.push(0);
+          var hi = Math.floor(len / 0x20000000), lo = (len * 8) >>> 0;
+          bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255);
+          bytes.push((lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+          var ror = function (x, n) { return (x >>> n) | (x << (32 - n)); };
+          var W = new Array(64);
+          for (var off = 0; off < bytes.length; off += 64) {
+            for (var t = 0; t < 16; t++) {
+              var j = off + t * 4;
+              W[t] = (bytes[j] << 24) | (bytes[j + 1] << 16) | (bytes[j + 2] << 8) | bytes[j + 3];
+            }
+            for (t = 16; t < 64; t++) {
+              var s0 = ror(W[t - 15], 7) ^ ror(W[t - 15], 18) ^ (W[t - 15] >>> 3);
+              var s1 = ror(W[t - 2], 17) ^ ror(W[t - 2], 19) ^ (W[t - 2] >>> 10);
+              W[t] = (W[t - 16] + s0 + W[t - 7] + s1) | 0;
+            }
+            var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+            for (t = 0; t < 64; t++) {
+              var S1 = ror(e, 6) ^ ror(e, 11) ^ ror(e, 25);
+              var t1 = (h + S1 + ((e & f) ^ (~e & g)) + K[t] + W[t]) | 0;
+              var S0 = ror(a, 2) ^ ror(a, 13) ^ ror(a, 22);
+              var t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+              h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+            }
+            H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+            H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+          }
+          var out = "";
+          for (i = 0; i < 8; i++) out += ("00000000" + (H[i] >>> 0).toString(16)).slice(-8);
+          return out;
+        }
+        function sha256(str) {
+          var fallback = function () { return sha256js(str); };
+          try {
+            var subtle = window.crypto && window.crypto.subtle;
+            if (!subtle || typeof subtle.digest !== "function" || typeof TextEncoder === "undefined") return Promise.resolve(fallback());
+            return subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
+              var arr = new Uint8Array(buf), hex = "";
+              for (var i = 0; i < arr.length; i++) hex += ("0" + arr[i].toString(16)).slice(-2);
+              return hex;
+            }, fallback);
+          } catch (e) { return Promise.resolve(fallback()); }
+        }
+        function hashPw(id, pw) { return sha256("csp|" + id + "|" + pw); }
+
+        function normId(raw) {
+          var s = String(raw || "").trim().toLowerCase();
+          if (!s) return "";
+          if (s.indexOf("@") >= 0) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : null;
+          var d = s.replace(/[\s\-().]/g, "");
+          var m = d.match(/^(?:\+?91|0)?(\d{10})$/);
+          return m ? m[1] : null;
+        }
+
+        var current = null;
+        function loadSession() {
+          try {
+            var sess = JSON.parse(sget("csp_session") || "null");
+            var u = users();
+            current = sess && sess.id && u[sess.id] ? sess.id : null;
+          } catch (e) { current = null; }
+        }
+        function setSession(id) {
+          current = id;
+          if (id) sset("csp_session", JSON.stringify({ id: id, at: new Date().toISOString() }));
+          else sdel("csp_session");
+          fire();
+        }
+        function fire() {
+          for (var i = 0; i < changeFns.length; i++) {
+            try { changeFns[i](); } catch (e) { if (window.console) console.error("Account listener failed", e); }
+          }
+        }
+        loadSession();
+
+        return {
+          sha256js: sha256js,
+          memMode: function () { return memMode; },
+          user: function () { if (!current) return null; var u = users()[current]; return u || null; },
+          onChange: function (fn) { changeFns.push(fn); },
+          signup: function (name, idRaw, pw, pw2, village) {
+            name = String(name || "").trim();
+            var empty = [];
+            if (!name) empty.push("full name");
+            if (!String(idRaw || "").trim()) empty.push("mobile or email");
+            if (!pw) empty.push("password");
+            if (!pw2) empty.push("confirm password");
+            if (empty.length) return Promise.reject(new Error("Please fill in: " + empty.join(", ") + "."));
+            var id = normId(idRaw);
+            if (!id) return Promise.reject(new Error("Enter a valid 10-digit mobile number or an email address."));
+            if (pw.length < 6) return Promise.reject(new Error("Password must be at least 6 characters."));
+            if (pw !== pw2) return Promise.reject(new Error("Passwords don't match."));
+            if (users()[id]) return Promise.reject(new Error("An account with this mobile or email already exists. Please log in."));
+            return hashPw(id, pw).then(function (h) {
+              var u = users();
+              if (u[id]) throw new Error("An account with this mobile or email already exists. Please log in.");
+              u[id] = { name: name, id: id, village: String(village || "").trim() || "Chandragudem", hash: h, created: new Date().toISOString(), history: [] };
+              saveUsers(u);
+              setSession(id);
+              return u[id];
+            });
+          },
+          login: function (idRaw, pw) {
+            if (!String(idRaw || "").trim() || !pw) return Promise.reject(new Error("Please enter your mobile or email and your password."));
+            var id = normId(idRaw);
+            if (!id) return Promise.reject(new Error("Enter a valid 10-digit mobile number or an email address."));
+            var u = users()[id];
+            if (!u) return Promise.reject(new Error("No account found with this mobile or email. Please sign up first."));
+            return hashPw(id, pw).then(function (h) {
+              if (h !== u.hash) throw new Error("Wrong password. Please try again.");
+              setSession(id);
+              return u;
+            });
+          },
+          logout: function () { setSession(null); },
+          history: function () { var u = this.user(); return u && u.history ? u.history : []; },
+          addHistory: function (item) {
+            if (!current) return false;
+            var u = users();
+            if (!u[current]) return false;
+            item.id = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+            item.date = new Date().toISOString();
+            u[current].history = (u[current].history || []);
+            u[current].history.unshift(item);
+            saveUsers(u);
+            fire();
+            return true;
+          },
+          removeHistory: function (hid) {
+            if (!current) return;
+            var u = users();
+            if (!u[current]) return;
+            u[current].history = (u[current].history || []).filter(function (h) { return h.id !== hid; });
+            saveUsers(u);
+            fire();
+          }
+        };
+      })();
+
+      /* ---------- Eligibility checker, account UI, saved checks ---------- */
+      function xAppSetup() {
+        var $ = function (id) { return document.getElementById(id); };
+        var C = window.xCalc;
+        if (!$("elig") || !C) return;
+        var rs = function (n) { return "₹" + Math.round(n).toLocaleString("en-IN"); };
+        var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+        var list = function (items) { return "<ul>" + items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul>"; };
+        var on = function (el, evs, fn) { if (!el) return; evs.forEach(function (ev) { el.addEventListener(ev, fn); }); };
+        var safe = function (fn) { return function (e) { try { return fn(e); } catch (err) { if (window.console) console.error("Checker error", err); } }; };
+        var syncing = false;
+        var lastSummary = "";
+
+        function yn(q) { return $(q + "-yes").checked ? "yes" : $(q + "-no").checked ? "no" : ""; }
+        function setYn(q, v) { $(q + "-yes").checked = v === "yes"; $(q + "-no").checked = v === "no"; }
+        var PUMPS = ["off", "grid", "none"];
+        function pump() { for (var i = 0; i < PUMPS.length; i++) if ($("f1-" + PUMPS[i]).checked) return PUMPS[i]; return ""; }
+        function setPump(v) { PUMPS.forEach(function (p) { $("f1-" + p).checked = p === v; }); }
+        function badge(el, s) {
+          var txt = { ok: "Eligible", no: "Not eligible", check: "Check with officials" }[s];
+          el.hidden = !txt;
+          el.textContent = txt || "";
+          if (txt) el.setAttribute("data-s", s); else el.removeAttribute("data-s");
+        }
+        function firstName() { var u = xAuth.user(); return u && u.name ? String(u.name).trim().split(/\s+/)[0] : ""; }
+
+        function homeResult() {
+          var a = { h1: yn("h1"), h2: yn("h2"), h3: yn("h3"), h4: yn("h4"), h5: yn("h5") };
+          var fails = [], missing = [];
+          if (a.h1 === "no") fails.push("You need to be an Indian citizen.");
+          if (a.h2 === "no") fails.push("You need your own house with a suitable roof.");
+          if (a.h3 === "no") fails.push("Your roof must be strong, get sunlight and have enough space (about 10 sq m per kW, approximate).");
+          if (a.h4 === "no") fails.push("You need a valid domestic (residential) electricity connection in your name, with a consumer number.");
+          ["h1", "h2", "h3", "h4", "h5"].forEach(function (q) { if (!a[q]) missing.push(q.toUpperCase()); });
+          var prior = a.h5 === "yes";
+          var r = { status: fails.length || prior ? "no" : missing.length ? "pending" : "ok", fails: fails, prior: prior, missing: missing };
+          if (r.status === "ok") {
+            var units = C.num($("el-units")), tariff = C.tariff(), cost = C.cost();
+            var s = C.suggest(units), kw = Math.min(10, s.kw);
+            var sub = C.subsidy(kw), gen = kw * 120;
+            var yearly = Math.min(gen, units) * tariff * 12;
+            r.units = units; r.kw = kw; r.band = s.band; r.sub = sub;
+            r.net = Math.max(0, kw * cost - sub);
+            r.monthly = yearly / 12; r.yearly = yearly;
+            r.payback = yearly > 0 ? r.net / yearly : 0;
+            r.tariff = tariff; r.cost = cost;
+          }
+          return r;
+        }
+
+        function renderHome(r) {
+          badge($("psg-badge"), r.status === "pending" ? "" : r.status);
+          var html = "";
+          if (r.status === "ok") {
+            html += "<div><h4>Why</h4>" + list(["You are an Indian citizen and own the house.", "Your roof is strong, sunny and has enough space.", "You have a domestic electricity connection in your name.", "You have not taken a rooftop solar subsidy before."]) + "</div>";
+            if (r.units > 0) {
+              html += '<div class="x-figs">' +
+                "<div><span>Suggested size</span><b>" + r.kw + " kW</b><span>" + esc(r.band) + "</span></div>" +
+                "<div><span>Subsidy</span><b>" + rs(r.sub) + "</b></div>" +
+                "<div><span>Net cost after subsidy</span><b>" + rs(r.net) + "</b></div>" +
+                "<div><span>Payback</span><b>" + (r.yearly > 0 ? r.payback.toFixed(1) + " yrs" : "—") + "</b></div></div>" +
+                '<p class="fineprint">For ' + Math.round(r.units).toLocaleString("en-IN") + " units a month, at " + rs(r.tariff) + " per unit and " + rs(r.cost) + " per kW from the calculator.</p>";
+            } else {
+              html += "<p>Enter your monthly units (H6) to see your plant size and subsidy.</p>";
+            }
+            html += '<div class="links"><a class="btn" href="#calculator">See full savings</a></div>';
+          } else if (r.status === "no") {
+            var why = r.fails.slice();
+            if (r.prior) why.push("Not eligible for a fresh subsidy. If you add more capacity, you may get subsidy only for the additional kW up to the 3 kW limit. Check with your DISCOM.");
+            html += "<div><h4>Why</h4>" + list(why.map(esc)) + "</div>";
+            if (r.missing.length) html += '<p class="fineprint">Still to answer: ' + r.missing.join(", ") + ".</p>";
+          } else {
+            html += "<p>Answer the household questions to see your result. Still to answer: " + r.missing.join(", ") + ".</p>";
+          }
+          $("psg-body").innerHTML = html;
+        }
+
+        function farmResult() {
+          var p = pump(), hp = C.num($("el-hp")), land = yn("f3");
+          var comps = [];
+          var hpNote = hp <= 0 ? "Enter your pump size in HP." : hp <= 7.5 ? "Fits: your " + hp + " HP pump is within the 7.5 HP limit." : "Your pump is " + hp + " HP: the Centre's support is limited to a 7.5 HP pump.";
+          if (p === "off") comps.push({ h: "Component B: standalone solar pump", items: [hpNote, "Cost share: Centre 30% (CFA), State at least 30%, Farmer about 40%.", "The farmer can take a bank loan for up to 30%, paying about 10% upfront."] });
+          if (p === "grid") comps.push({ h: "Component C: solarise your existing grid pump", items: [hpNote, "Cost share: Centre 30%, State at least 30%, the rest is the farmer's share."] });
+          if (land === "yes") comps.push({ h: "Component A: solar plant of 500 kW to 2 MW on your land", items: ["Sell the power to the DISCOM (no subsidy; the DISCOM gets an incentive).", "Alternatively, lease the land to a developer for rent."] });
+          var status = comps.length ? "check" : p && land ? "no" : "pending";
+          return { status: status, comps: comps, pump: p, hp: hp, land: land };
+        }
+
+        function renderFarm(r) {
+          badge($("kusum-badge"), r.status === "pending" ? "" : r.status);
+          var html = "";
+          if (r.comps.length) {
+            html += r.comps.map(function (c) { return "<div><h4>" + esc(c.h) + "</h4>" + list(c.items.map(esc)) + "</div>"; }).join("");
+          } else if (r.status === "no") {
+            html += "<div><h4>Why</h4>" + list(["No PM-KUSUM component fits now.", "You have no pump, and no land for a solar plant."]) + "</div>";
+          } else {
+            html += "<p>Answer F1 and F3 to see which component fits.</p>";
+          }
+          $("kusum-body").innerHTML = html;
+
+          var total = C.num($("el-pump"));
+          $("pc-centre").textContent = rs(total * 0.3);
+          $("pc-state").textContent = rs(total * 0.3);
+          $("pc-farmer").textContent = rs(total * 0.4);
+          $("pc-loan").textContent = "Of the farmer's " + rs(total * 0.4) + ", about " + rs(total * 0.1) + " is paid upfront and up to " + rs(total * 0.3) + " can be a bank loan.";
+        }
+
+        function summary(home, farm, hr, fr) {
+          var parts = [];
+          if (home) {
+            if (hr.status === "ok") parts.push(hr.units > 0 ? "You can apply for PM Surya Ghar now and get " + rs(hr.sub) + " subsidy." : "You can apply for PM Surya Ghar now.");
+            else if (hr.status === "no" && hr.prior && !hr.fails.length) parts.push("You can't get a fresh PM Surya Ghar subsidy; ask your DISCOM about added capacity.");
+            else if (hr.status === "no") parts.push("You are not eligible for PM Surya Ghar right now.");
+            else parts.push("Answer the household questions to check PM Surya Ghar.");
+          }
+          if (farm) {
+            var pumpComp = fr.pump === "off" || fr.pump === "grid";
+            if (fr.status === "check") parts.push(pumpComp ? "For your farm pump, wait for PM-KUSUM 2.0." : "For a solar plant on your land, wait for PM-KUSUM 2.0.");
+            else if (fr.status === "no") parts.push("No PM-KUSUM component fits your farm now.");
+            else parts.push("Answer the farmer questions to check PM-KUSUM.");
+          }
+          if (!parts.length) return "Pick Household, Farmer or both to see your result.";
+          return parts.join(" ");
+        }
+
+        function render() {
+          var home = $("who-home").checked, farm = $("who-farm").checked;
+          $("el-home").hidden = !home;
+          $("el-farm").hidden = !farm;
+          $("card-psg").hidden = !home;
+          $("card-kusum").hidden = !farm;
+          var hr = homeResult(), fr = farmResult();
+          if (home) renderHome(hr);
+          if (farm) renderFarm(fr);
+          lastSummary = summary(home, farm, hr, fr);
+          var name = firstName();
+          var shown = lastSummary;
+          if (name && (home || farm)) shown = name + ", " + lastSummary.charAt(0).toLowerCase() + lastSummary.slice(1);
+          $("el-sum").textContent = shown;
+        }
+        function update() { try { render(); } catch (e) { if (window.console) console.error("Checker update failed", e); } }
+
+        // Units are shared with the calculator, both ways.
+        function pushUnits() {
+          try {
+            var u = C.num($("el-units"));
+            if (u > 0) { syncing = true; C.setUnits(u); }
+          } catch (e) { if (window.console) console.error("Unit sync failed", e); }
+          syncing = false;
+          update();
+        }
+        C.onChange(function (units) {
+          if (syncing) return;
+          $("el-units").value = Math.round(units * 100) / 100;
+          update();
+        });
+
+        function getState() {
+          return {
+            home: $("who-home").checked, farm: $("who-farm").checked,
+            h1: yn("h1"), h2: yn("h2"), h3: yn("h3"), h4: yn("h4"), h5: yn("h5"),
+            units: $("el-units").value, f1: pump(), hp: $("el-hp").value, f3: yn("f3"), pumpCost: $("el-pump").value
+          };
+        }
+        function setState(s) {
+          $("who-home").checked = !!s.home;
+          $("who-farm").checked = !!s.farm;
+          ["h1", "h2", "h3", "h4", "h5", "f3"].forEach(function (q) { setYn(q, s[q] || ""); });
+          setPump(s.f1 || "");
+          $("el-units").value = s.units == null ? "200" : s.units;
+          $("el-hp").value = s.hp == null ? "5" : s.hp;
+          $("el-pump").value = s.pumpCost == null ? "3,00,000" : s.pumpCost;
+          pushUnits();
+        }
+        var BLANK = { home: false, farm: false, units: "200", hp: "5", pumpCost: "3,00,000" };
+
+        ["who-home", "who-farm", "h1-yes", "h1-no", "h2-yes", "h2-no", "h3-yes", "h3-no", "h4-yes", "h4-no", "h5-yes", "h5-no", "f1-off", "f1-grid", "f1-none", "f3-yes", "f3-no"].forEach(function (id) {
+          on($(id), ["click", "change"], update);
+        });
+        on($("el-units"), ["input", "change", "keyup", "blur"], pushUnits);
+        on($("el-hp"), ["input", "change", "keyup", "blur"], update);
+        on($("el-pump"), ["input", "change", "keyup", "blur"], update);
+        on($("el-reset"), ["click"], safe(function () { setState(BLANK); }));
+        on($("el-sample-home"), ["click"], safe(function () {
+          setState({ home: true, farm: false, h1: "yes", h2: "yes", h3: "yes", h4: "yes", h5: "no", units: "200", hp: "5", pumpCost: $("el-pump").value });
+        }));
+        on($("el-sample-farm"), ["click"], safe(function () {
+          setState({ home: false, farm: true, f1: "off", hp: "5", f3: "no", units: $("el-units").value, pumpCost: $("el-pump").value });
+        }));
+        $("el-units").value = Math.round(C.units() * 100) / 100;
+
+        /* ----- Account UI ----- */
+        var header = document.querySelector("header.nav");
+        var acct = document.createElement("div");
+        acct.className = "x-acct";
+        var hi = document.createElement("span");
+        hi.className = "x-hi";
+        hi.id = "acct-hi";
+        var loginBtn = document.createElement("button");
+        loginBtn.type = "button";
+        loginBtn.className = "x-login";
+        loginBtn.id = "acct-login";
+        loginBtn.textContent = "Login";
+        var logoutBtn = document.createElement("button");
+        logoutBtn.type = "button";
+        logoutBtn.className = "x-login";
+        logoutBtn.id = "acct-logout";
+        logoutBtn.textContent = "Logout";
+        acct.appendChild(hi);
+        acct.appendChild(loginBtn);
+        acct.appendChild(logoutBtn);
+        function mountAcct() { if (header && acct.parentNode !== header) header.appendChild(acct); }
+        mountAcct();
+        setTimeout(mountAcct, 0);
+
+        var modal = $("auth-modal");
+        function tab(which) {
+          var login = which === "login";
+          $("form-login").hidden = !login;
+          $("form-signup").hidden = login;
+          $("tab-login").setAttribute("aria-pressed", login ? "true" : "false");
+          $("tab-login").setAttribute("aria-selected", login ? "true" : "false");
+          $("tab-signup").setAttribute("aria-pressed", login ? "false" : "true");
+          $("tab-signup").setAttribute("aria-selected", login ? "false" : "true");
+          $("li-err").textContent = "";
+          $("su-err").textContent = "";
+        }
+        function openModal() {
+          tab("login");
+          $("auth-mem").hidden = !xAuth.memMode();
+          modal.hidden = false;
+          try { $("li-id").focus(); } catch (e) {}
+        }
+        function closeModal() {
+          modal.hidden = true;
+          try { loginBtn.focus(); } catch (e) {}
+        }
+        on(loginBtn, ["click"], safe(openModal));
+        on(logoutBtn, ["click"], safe(function () { xAuth.logout(); }));
+        on($("auth-close"), ["click"], safe(closeModal));
+        on(modal, ["click"], function (e) { if (e.target === modal) closeModal(); });
+        on(document, ["keydown"], function (e) { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+        on($("tab-login"), ["click"], safe(function () { tab("login"); }));
+        on($("tab-signup"), ["click"], safe(function () { tab("signup"); }));
+
+        function busy(btn, b) { btn.disabled = b; }
+        on($("form-login"), ["submit"], function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          $("li-err").textContent = "";
+          busy($("li-go"), true);
+          var p;
+          try { p = xAuth.login($("li-id").value, $("li-pw").value); } catch (err) { p = Promise.reject(err); }
+          return p.then(function () {
+            $("li-pw").value = "";
+            closeModal();
+          }, function (err) {
+            $("li-err").textContent = (err && err.message) || "Could not log in.";
+          }).then(function () { busy($("li-go"), false); });
+        });
+        on($("form-signup"), ["submit"], function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          $("su-err").textContent = "";
+          busy($("su-go"), true);
+          var p;
+          try { p = xAuth.signup($("su-name").value, $("su-id").value, $("su-pw").value, $("su-pw2").value, $("su-village").value); } catch (err) { p = Promise.reject(err); }
+          return p.then(function () {
+            $("su-pw").value = "";
+            $("su-pw2").value = "";
+            closeModal();
+          }, function (err) {
+            $("su-err").textContent = (err && err.message) || "Could not sign up.";
+          }).then(function () { busy($("su-go"), false); });
+        });
+
+        /* ----- Saving results ----- */
+        function flashMsg(id, text) {
+          $(id).textContent = text;
+          setTimeout(function () { if ($(id).textContent === text) $(id).textContent = ""; }, 4000);
+        }
+        on($("el-save"), ["click"], safe(function () {
+          var st = getState();
+          var who = [st.home ? "Household" : "", st.farm ? "Farmer" : ""].filter(Boolean).join(" + ") || "No choice";
+          var ok = xAuth.addHistory({ type: "elig", label: "Eligibility check · " + who, summary: lastSummary, data: { checker: st, calc: C.getState() } });
+          flashMsg("el-save-msg", ok ? "Saved to My saved checks." : "Please log in to save.");
+        }));
+        on($("calc-save"), ["click"], safe(function () {
+          var r = C.result();
+          var text = r ? r.units.toFixed(0) + " units · " + r.kw + " kW · subsidy " + rs(r.sub) + " · net " + rs(r.net) + " · payback " + (r.yearly > 0 ? r.payback.toFixed(1) + " yrs" : "—") : "";
+          var ok = xAuth.addHistory({ type: "calc", label: "Savings calculation", summary: text, data: { calc: C.getState(), result: r } });
+          flashMsg("calc-save-msg", ok ? "Saved to My saved checks." : "Please log in to save.");
+        }));
+
+        function renderSaved() {
+          var items = xAuth.history();
+          if (!items.length) {
+            $("saved-list").innerHTML = '<li><div><small>Nothing saved yet. Use "Save my result" in the calculator or the checker.</small></div></li>';
+            return;
+          }
+          $("saved-list").innerHTML = items.map(function (h) {
+            var d = new Date(h.date);
+            var when = isNaN(d.getTime()) ? "" : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+            return '<li><div><b>' + esc(h.label) + "</b><small>" + esc(when) + "</small><small>" + esc(h.summary) + '</small></div>' +
+              '<div class="x-actions"><button type="button" class="btn" data-act="load" data-id="' + esc(h.id) + '">Load</button>' +
+              '<button type="button" class="btn" data-act="del" data-id="' + esc(h.id) + '">Delete</button></div></li>';
+          }).join("");
+        }
+        function go(id) {
+          var el = $(id);
+          try { if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+        }
+        on($("saved-list"), ["click"], safe(function (e) {
+          var t = e.target;
+          while (t && t !== $("saved-list") && !(t.getAttribute && t.getAttribute("data-act"))) t = t.parentNode;
+          if (!t || !t.getAttribute || !t.getAttribute("data-act")) return;
+          var act = t.getAttribute("data-act"), hid = t.getAttribute("data-id");
+          var item = xAuth.history().filter(function (h) { return h.id === hid; })[0];
+          if (!item) return;
+          if (act === "del") { xAuth.removeHistory(hid); return; }
+          if (item.data && item.data.calc) C.setState(item.data.calc);
+          if (item.type === "elig" && item.data && item.data.checker) { setState(item.data.checker); go("eligibility"); }
+          else go("calculator");
+        }));
+
+        function renderAuth() {
+          var u = xAuth.user();
+          var inn = !!u;
+          hi.hidden = !inn;
+          hi.textContent = inn ? "Hi, " + firstName() : "";
+          loginBtn.hidden = inn;
+          logoutBtn.hidden = !inn;
+          $("calc-save-wrap").hidden = !inn;
+          $("el-save-wrap").hidden = !inn;
+          $("saved-panel").hidden = !inn;
+          $("saved-mem").hidden = !xAuth.memMode();
+          if (inn) renderSaved();
+          update();
+        }
+        xAuth.onChange(safe(renderAuth));
+        renderAuth();
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", xAppSetup);
+      else xAppSetup();
     </script>
   </body>
 </html>
