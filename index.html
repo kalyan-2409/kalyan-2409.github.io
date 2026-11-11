@@ -133,7 +133,16 @@
       .x-modal__box h2 { font: var(--type-heading); }
       .x-close { width: var(--tap); height: var(--tap); border: 0; border-radius: 50%; background: var(--fill-tertiary); color: var(--text-primary); font: var(--type-heading); cursor: pointer; }
       .x-authform { display: grid; gap: 14px; }
-      .x-authform input[type="password"] {
+      .x-off { font: var(--type-caption); color: var(--text-primary-on); white-space: nowrap; padding: 0 6px; }
+      .x-off[hidden], .x-hi[hidden], .x-login[hidden] { display: none; }
+      .x-busy { cursor: progress; }
+      .x-busy::before {
+        content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px;
+        border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: x-spin 0.7s linear infinite;
+      }
+      @keyframes x-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .x-busy::before { animation-duration: 2s; } }
+      .x-authform input[type="password"], .x-authform input[type="email"] {
         font: var(--type-body); color: var(--text-primary); background: var(--fill-primary-on);
         border: 1px solid var(--stroke-primary); border-radius: var(--r-s); padding: 10px 12px; min-height: var(--tap); width: 100%;
       }
@@ -398,7 +407,6 @@
           <div class="x-auth x-block" id="saved-panel" hidden>
             <h3 class="x-group">My saved checks</h3>
             <ul class="x-saved" id="saved-list"></ul>
-            <p class="fineprint" id="saved-mem" hidden>Login is saved only on this device's browser.</p>
           </div>
         </section>
 
@@ -621,7 +629,7 @@
       </main>
       <footer class="foot">
         <p>Community Service Project, Dept. of CSE, Lakireddy Bali Reddy College of Engineering (Autonomous), Mylavaram, affiliated to JNTUK. Guide: Mr. D. Anil Kumar, Sr. Assistant Professor, Dept. of CSE. Supports SDG 7 (Affordable and Clean Energy) and SDG 13 (Climate Action).</p>
-        <p>Demo login for the student project; data stays in your browser.</p>
+        <p>Accounts and saved checks are stored securely in Firebase (Cloud Firestore, Mumbai region).</p>
         <nav aria-label="Back to sections" data-auto></nav>
         <a class="badge" href="https://hark.com/" target="_blank" rel="noopener"><span class="hark-mark"></span><span>built by hark</span></a>
       </footer>
@@ -638,15 +646,19 @@
         </div>
         <form class="x-authform" id="form-login" novalidate>
           <div class="x-field">
-            <label for="li-id">Mobile or email</label>
-            <input type="text" id="li-id" autocomplete="username" />
+            <label for="li-id">Email</label>
+            <input type="email" id="li-id" autocomplete="email" inputmode="email" />
           </div>
           <div class="x-field">
             <label for="li-pw">Password</label>
             <input type="password" id="li-pw" autocomplete="current-password" />
           </div>
           <p class="x-err" id="li-err" role="alert"></p>
-          <div class="x-actions"><button type="submit" class="btn" id="li-go">Login</button></div>
+          <p class="x-msg" id="li-msg" role="status"></p>
+          <div class="x-actions">
+            <button type="submit" class="btn" id="li-go">Login</button>
+            <button type="button" class="x-reset" id="li-forgot">Forgot password?</button>
+          </div>
         </form>
         <form class="x-authform" id="form-signup" novalidate hidden>
           <div class="x-field">
@@ -654,8 +666,8 @@
             <input type="text" id="su-name" autocomplete="name" />
           </div>
           <div class="x-field">
-            <label for="su-id">Mobile or email</label>
-            <input type="text" id="su-id" autocomplete="username" />
+            <label for="su-id">Email</label>
+            <input type="email" id="su-id" autocomplete="email" inputmode="email" />
           </div>
           <div class="x-field">
             <label for="su-pw">Password <small>(at least 6 characters)</small></label>
@@ -672,8 +684,7 @@
           <p class="x-err" id="su-err" role="alert"></p>
           <div class="x-actions"><button type="submit" class="btn" id="su-go">Create account</button></div>
         </form>
-        <p class="fineprint" id="auth-mem" hidden>Login is saved only on this device's browser.</p>
-        <p class="fineprint">Demo login for the student project; data stays in your browser.</p>
+        <p class="fineprint">Stored securely in Firebase. You stay logged in on this device until you log out.</p>
       </div>
     </div>
     <script src="hark.js"></script>
@@ -841,196 +852,150 @@
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", xCalcSetup);
       else xCalcSetup();
     </script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script>
-      /* ---------- Demo accounts: storage, hashing, session ---------- */
+      /* ---------- Accounts and saved checks: Firebase Auth + Cloud Firestore ---------- */
       var xAuth = (function () {
-        var mem = {};
-        var memMode = false;
+        var firebaseConfig = {
+          apiKey: "AIzaSyDb9XMiqo9QkMgu9Ux9LPLOISt6EFux1Jw",
+          authDomain: "csp-solar-chandragudem.firebaseapp.com",
+          projectId: "csp-solar-chandragudem",
+          storageBucket: "csp-solar-chandragudem.firebasestorage.app",
+          messagingSenderId: "795854384153",
+          appId: "1:795854384153:web:be8bbdf7226cf368924e88"
+        };
+        var log = function (m, e) { if (window.console) console.error(m, e); };
+        var ok = false, auth = null, db = null;
         try {
-          localStorage.setItem("csp_probe", "1");
-          localStorage.removeItem("csp_probe");
-        } catch (e) { memMode = true; }
-        var changeFns = [];
+          var fb = window.firebase;
+          if (fb && typeof fb.initializeApp === "function" && typeof fb.auth === "function" && typeof fb.firestore === "function") {
+            if (!fb.apps || !fb.apps.length) fb.initializeApp(firebaseConfig);
+            auth = fb.auth();
+            db = fb.firestore();
+            ok = true;
+          }
+        } catch (e) { ok = false; log("Firebase unavailable", e); }
 
-        function sget(k) {
-          if (!memMode) {
-            try { return localStorage.getItem(k); } catch (e) { memMode = true; }
-          }
-          return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null;
+        var MSG = {
+          "auth/email-already-in-use": "An account with this email already exists. Please log in.",
+          "auth/invalid-email": "Please enter a valid email address.",
+          "auth/weak-password": "Password must be at least 6 characters.",
+          "auth/invalid-credential": "Wrong email or password.",
+          "auth/invalid-login-credentials": "Wrong email or password.",
+          "auth/wrong-password": "Wrong email or password.",
+          "auth/user-not-found": "Wrong email or password.",
+          "auth/missing-password": "Please enter your password.",
+          "auth/too-many-requests": "Too many attempts. Please wait a few minutes and try again.",
+          "auth/network-request-failed": "No internet connection. Please check your network and try again.",
+          "unavailable": "No internet connection. Please check your network and try again.",
+          "permission-denied": "You don't have permission to do that. Please log in again.",
+          "firestore/permission-denied": "You don't have permission to do that. Please log in again."
+        };
+        function friendly(err, fallback) {
+          var code = err && err.code ? String(err.code) : "";
+          if (MSG[code]) return MSG[code];
+          if (err && err.local) return err.message;
+          return fallback || "Something went wrong. Please try again.";
         }
-        function sset(k, v) {
-          mem[k] = v;
-          if (!memMode) {
-            try { localStorage.setItem(k, v); } catch (e) { memMode = true; }
-          }
-        }
-        function sdel(k) {
-          delete mem[k];
-          if (!memMode) {
-            try { localStorage.removeItem(k); } catch (e) { memMode = true; }
-          }
-        }
-        function users() {
-          try { var u = JSON.parse(sget("csp_users") || "{}"); return u && typeof u === "object" ? u : {}; } catch (e) { return {}; }
-        }
-        function saveUsers(u) {
-          try { sset("csp_users", JSON.stringify(u)); } catch (e) { if (window.console) console.error("Could not save users", e); }
-        }
+        function bad(msg) { var e = new Error(msg); e.local = true; return Promise.reject(e); }
+        function attempt(fn) { try { return Promise.resolve(fn()); } catch (e) { return Promise.reject(e); } }
+        var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // Pure-JS SHA-256, used when crypto.subtle is missing (non-secure pages).
-        function sha256js(str) {
-          var s = unescape(encodeURIComponent(str));
-          var K = [], H = [], primes = [], cand = 2;
-          var frac = function (x) { return ((x - Math.floor(x)) * 4294967296) | 0; };
-          while (primes.length < 64) {
-            var isP = true;
-            for (var p = 0; p < primes.length && primes[p] * primes[p] <= cand; p++) if (cand % primes[p] === 0) { isP = false; break; }
-            if (isP) {
-              if (primes.length < 8) H.push(frac(Math.pow(cand, 1 / 2)));
-              K.push(frac(Math.pow(cand, 1 / 3)));
-              primes.push(cand);
-            }
-            cand++;
-          }
-          var bytes = [];
-          for (var i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i) & 255);
-          var len = bytes.length;
-          bytes.push(0x80);
-          while (bytes.length % 64 !== 56) bytes.push(0);
-          var hi = Math.floor(len / 0x20000000), lo = (len * 8) >>> 0;
-          bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255);
-          bytes.push((lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
-          var ror = function (x, n) { return (x >>> n) | (x << (32 - n)); };
-          var W = new Array(64);
-          for (var off = 0; off < bytes.length; off += 64) {
-            for (var t = 0; t < 16; t++) {
-              var j = off + t * 4;
-              W[t] = (bytes[j] << 24) | (bytes[j + 1] << 16) | (bytes[j + 2] << 8) | bytes[j + 3];
-            }
-            for (t = 16; t < 64; t++) {
-              var s0 = ror(W[t - 15], 7) ^ ror(W[t - 15], 18) ^ (W[t - 15] >>> 3);
-              var s1 = ror(W[t - 2], 17) ^ ror(W[t - 2], 19) ^ (W[t - 2] >>> 10);
-              W[t] = (W[t - 16] + s0 + W[t - 7] + s1) | 0;
-            }
-            var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
-            for (t = 0; t < 64; t++) {
-              var S1 = ror(e, 6) ^ ror(e, 11) ^ ror(e, 25);
-              var t1 = (h + S1 + ((e & f) ^ (~e & g)) + K[t] + W[t]) | 0;
-              var S0 = ror(a, 2) ^ ror(a, 13) ^ ror(a, 22);
-              var t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
-              h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
-            }
-            H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
-            H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
-          }
-          var out = "";
-          for (i = 0; i < 8; i++) out += ("00000000" + (H[i] >>> 0).toString(16)).slice(-8);
-          return out;
-        }
-        function sha256(str) {
-          var fallback = function () { return sha256js(str); };
-          try {
-            var subtle = window.crypto && window.crypto.subtle;
-            if (!subtle || typeof subtle.digest !== "function" || typeof TextEncoder === "undefined") return Promise.resolve(fallback());
-            return subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
-              var arr = new Uint8Array(buf), hex = "";
-              for (var i = 0; i < arr.length; i++) hex += ("0" + arr[i].toString(16)).slice(-2);
-              return hex;
-            }, fallback);
-          } catch (e) { return Promise.resolve(fallback()); }
-        }
-        function hashPw(id, pw) { return sha256("csp|" + id + "|" + pw); }
-
-        function normId(raw) {
-          var s = String(raw || "").trim().toLowerCase();
-          if (!s) return "";
-          if (s.indexOf("@") >= 0) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : null;
-          var d = s.replace(/[\s\-().]/g, "");
-          var m = d.match(/^(?:\+?91|0)?(\d{10})$/);
-          return m ? m[1] : null;
-        }
-
-        var current = null;
-        function loadSession() {
-          try {
-            var sess = JSON.parse(sget("csp_session") || "null");
-            var u = users();
-            current = sess && sess.id && u[sess.id] ? sess.id : null;
-          } catch (e) { current = null; }
-        }
-        function setSession(id) {
-          current = id;
-          if (id) sset("csp_session", JSON.stringify({ id: id, at: new Date().toISOString() }));
-          else sdel("csp_session");
-          fire();
-        }
+        var current = null, pendingName = "", changeFns = [];
         function fire() {
           for (var i = 0; i < changeFns.length; i++) {
-            try { changeFns[i](); } catch (e) { if (window.console) console.error("Account listener failed", e); }
+            try { changeFns[i](); } catch (e) { log("Account listener failed", e); }
           }
         }
-        loadSession();
+        if (ok) {
+          try {
+            auth.onAuthStateChanged(function (u) { current = u || null; fire(); }, function (e) { log("Auth state error", e); });
+          } catch (e) { ok = false; log("Auth listener failed", e); }
+        }
+        function ts() { return firebase.firestore.FieldValue.serverTimestamp(); }
+        function checks() { return db.collection("users").doc(current.uid).collection("checks"); }
+        function clean(o) { try { return JSON.parse(JSON.stringify(o == null ? {} : o)); } catch (e) { return {}; } }
+        function need() {
+          if (!ok) return bad("Login needs internet.");
+          if (!current) return bad("Please log in first.");
+          return null;
+        }
 
         return {
-          sha256js: sha256js,
-          memMode: function () { return memMode; },
-          user: function () { if (!current) return null; var u = users()[current]; return u || null; },
+          available: function () { return ok; },
+          friendly: friendly,
+          user: function () {
+            if (!current) return null;
+            var name = current.displayName || pendingName || String(current.email || "").split("@")[0];
+            return { uid: current.uid, email: current.email, name: name };
+          },
           onChange: function (fn) { changeFns.push(fn); },
-          signup: function (name, idRaw, pw, pw2, village) {
+          signup: function (name, email, pw, pw2, village) {
+            if (!ok) return bad("Login needs internet.");
             name = String(name || "").trim();
+            email = String(email || "").trim();
+            village = String(village || "").trim() || "Chandragudem";
             var empty = [];
             if (!name) empty.push("full name");
-            if (!String(idRaw || "").trim()) empty.push("mobile or email");
+            if (!email) empty.push("email");
             if (!pw) empty.push("password");
             if (!pw2) empty.push("confirm password");
-            if (empty.length) return Promise.reject(new Error("Please fill in: " + empty.join(", ") + "."));
-            var id = normId(idRaw);
-            if (!id) return Promise.reject(new Error("Enter a valid 10-digit mobile number or an email address."));
-            if (pw.length < 6) return Promise.reject(new Error("Password must be at least 6 characters."));
-            if (pw !== pw2) return Promise.reject(new Error("Passwords don't match."));
-            if (users()[id]) return Promise.reject(new Error("An account with this mobile or email already exists. Please log in."));
-            return hashPw(id, pw).then(function (h) {
-              var u = users();
-              if (u[id]) throw new Error("An account with this mobile or email already exists. Please log in.");
-              u[id] = { name: name, id: id, village: String(village || "").trim() || "Chandragudem", hash: h, created: new Date().toISOString(), history: [] };
-              saveUsers(u);
-              setSession(id);
-              return u[id];
+            if (empty.length) return bad("Please fill in: " + empty.join(", ") + ".");
+            if (!EMAIL.test(email)) return bad("Please enter a valid email address.");
+            if (pw.length < 6) return bad("Password must be at least 6 characters.");
+            if (pw !== pw2) return bad("Passwords don't match.");
+            pendingName = name;
+            return attempt(function () { return auth.createUserWithEmailAndPassword(email, pw); }).then(function (cred) {
+              var u = cred.user;
+              return attempt(function () { return u.updateProfile({ displayName: name }); })
+                .catch(function (e) { log("Could not set display name", e); })
+                .then(function () {
+                  return attempt(function () {
+                    return db.collection("users").doc(u.uid).set({ name: name, email: u.email || email, village: village, createdAt: ts() });
+                  }).catch(function (e) { log("Could not save profile", e); });
+                })
+                .then(function () { fire(); return u; });
             });
           },
-          login: function (idRaw, pw) {
-            if (!String(idRaw || "").trim() || !pw) return Promise.reject(new Error("Please enter your mobile or email and your password."));
-            var id = normId(idRaw);
-            if (!id) return Promise.reject(new Error("Enter a valid 10-digit mobile number or an email address."));
-            var u = users()[id];
-            if (!u) return Promise.reject(new Error("No account found with this mobile or email. Please sign up first."));
-            return hashPw(id, pw).then(function (h) {
-              if (h !== u.hash) throw new Error("Wrong password. Please try again.");
-              setSession(id);
-              return u;
+          login: function (email, pw) {
+            if (!ok) return bad("Login needs internet.");
+            email = String(email || "").trim();
+            if (!email || !pw) return bad("Please enter your email and your password.");
+            if (!EMAIL.test(email)) return bad("Please enter a valid email address.");
+            return attempt(function () { return auth.signInWithEmailAndPassword(email, pw); });
+          },
+          reset: function (email) {
+            if (!ok) return bad("Login needs internet.");
+            email = String(email || "").trim();
+            if (!email) return bad("Enter your email above, then tap Forgot password.");
+            if (!EMAIL.test(email)) return bad("Please enter a valid email address.");
+            return attempt(function () { return auth.sendPasswordResetEmail(email); });
+          },
+          logout: function () {
+            if (!ok) return Promise.resolve();
+            return attempt(function () { return auth.signOut(); });
+          },
+          listChecks: function () {
+            var n = need(); if (n) return n;
+            return attempt(function () { return checks().orderBy("createdAt", "desc").limit(20).get(); }).then(function (snap) {
+              return snap.docs.map(function (d) {
+                var data = d.data({ serverTimestamps: "estimate" }) || {};
+                var at = data.createdAt && typeof data.createdAt.toDate === "function" ? data.createdAt.toDate() : null;
+                return { id: d.id, type: data.type, inputs: data.inputs || {}, results: data.results || {}, summary: data.summary || "", date: at };
+              });
             });
           },
-          logout: function () { setSession(null); },
-          history: function () { var u = this.user(); return u && u.history ? u.history : []; },
-          addHistory: function (item) {
-            if (!current) return false;
-            var u = users();
-            if (!u[current]) return false;
-            item.id = "s" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
-            item.date = new Date().toISOString();
-            u[current].history = (u[current].history || []);
-            u[current].history.unshift(item);
-            saveUsers(u);
-            fire();
-            return true;
+          addCheck: function (type, inputs, results, summary) {
+            var n = need(); if (n) return n;
+            return attempt(function () {
+              return checks().add({ type: type, inputs: clean(inputs), results: clean(results), summary: String(summary || ""), createdAt: ts() });
+            });
           },
-          removeHistory: function (hid) {
-            if (!current) return;
-            var u = users();
-            if (!u[current]) return;
-            u[current].history = (u[current].history || []).filter(function (h) { return h.id !== hid; });
-            saveUsers(u);
-            fire();
+          removeCheck: function (id) {
+            var n = need(); if (n) return n;
+            return attempt(function () { return checks().doc(id).delete(); });
           }
         };
       })();
@@ -1243,7 +1208,13 @@
         logoutBtn.className = "x-login";
         logoutBtn.id = "acct-logout";
         logoutBtn.textContent = "Logout";
+        var offNote = document.createElement("span");
+        offNote.className = "x-off";
+        offNote.id = "acct-off";
+        offNote.textContent = "Login needs internet.";
+        offNote.hidden = true;
         acct.appendChild(hi);
+        acct.appendChild(offNote);
         acct.appendChild(loginBtn);
         acct.appendChild(logoutBtn);
         function mountAcct() { if (header && acct.parentNode !== header) header.appendChild(acct); }
@@ -1251,6 +1222,13 @@
         setTimeout(mountAcct, 0);
 
         var modal = $("auth-modal");
+        function log(m, e) { if (window.console) console.error(m, e); }
+        function busy(btn, b) {
+          if (!btn) return;
+          btn.disabled = b;
+          btn.classList.toggle("x-busy", b);
+          if (b) btn.setAttribute("aria-busy", "true"); else btn.removeAttribute("aria-busy");
+        }
         function tab(which) {
           var login = which === "login";
           $("form-login").hidden = !login;
@@ -1260,11 +1238,12 @@
           $("tab-signup").setAttribute("aria-pressed", login ? "false" : "true");
           $("tab-signup").setAttribute("aria-selected", login ? "false" : "true");
           $("li-err").textContent = "";
+          $("li-msg").textContent = "";
           $("su-err").textContent = "";
         }
         function openModal() {
+          if (!xAuth.available()) return;
           tab("login");
-          $("auth-mem").hidden = !xAuth.memMode();
           modal.hidden = false;
           try { $("li-id").focus(); } catch (e) {}
         }
@@ -1273,17 +1252,21 @@
           try { loginBtn.focus(); } catch (e) {}
         }
         on(loginBtn, ["click"], safe(openModal));
-        on(logoutBtn, ["click"], safe(function () { xAuth.logout(); }));
+        on(logoutBtn, ["click"], safe(function () {
+          busy(logoutBtn, true);
+          xAuth.logout().catch(function (err) { log("Logout failed", err); }).then(function () { busy(logoutBtn, false); });
+        }));
         on($("auth-close"), ["click"], safe(closeModal));
         on(modal, ["click"], function (e) { if (e.target === modal) closeModal(); });
         on(document, ["keydown"], function (e) { if (e.key === "Escape" && !modal.hidden) closeModal(); });
         on($("tab-login"), ["click"], safe(function () { tab("login"); }));
         on($("tab-signup"), ["click"], safe(function () { tab("signup"); }));
 
-        function busy(btn, b) { btn.disabled = b; }
         on($("form-login"), ["submit"], function (e) {
           if (e && e.preventDefault) e.preventDefault();
+          if ($("li-go").disabled) return;
           $("li-err").textContent = "";
+          $("li-msg").textContent = "";
           busy($("li-go"), true);
           var p;
           try { p = xAuth.login($("li-id").value, $("li-pw").value); } catch (err) { p = Promise.reject(err); }
@@ -1291,11 +1274,26 @@
             $("li-pw").value = "";
             closeModal();
           }, function (err) {
-            $("li-err").textContent = (err && err.message) || "Could not log in.";
+            $("li-err").textContent = xAuth.friendly(err, "Could not log in. Please try again.");
           }).then(function () { busy($("li-go"), false); });
+        });
+        on($("li-forgot"), ["click"], function () {
+          if ($("li-forgot").disabled) return;
+          $("li-err").textContent = "";
+          $("li-msg").textContent = "";
+          busy($("li-forgot"), true);
+          var p;
+          try { p = xAuth.reset($("li-id").value); } catch (err) { p = Promise.reject(err); }
+          p.then(function () {
+            $("li-msg").textContent = "Password reset email sent. Check your inbox (and spam folder).";
+          }, function (err) {
+            if (err && err.code === "auth/user-not-found") $("li-err").textContent = "No account found with this email. Please sign up.";
+            else $("li-err").textContent = xAuth.friendly(err, "Could not send the reset email. Please try again.");
+          }).then(function () { busy($("li-forgot"), false); });
         });
         on($("form-signup"), ["submit"], function (e) {
           if (e && e.preventDefault) e.preventDefault();
+          if ($("su-go").disabled) return;
           $("su-err").textContent = "";
           busy($("su-go"), true);
           var p;
@@ -1305,7 +1303,7 @@
             $("su-pw2").value = "";
             closeModal();
           }, function (err) {
-            $("su-err").textContent = (err && err.message) || "Could not sign up.";
+            $("su-err").textContent = xAuth.friendly(err, "Could not sign up. Please try again.");
           }).then(function () { busy($("su-go"), false); });
         });
 
@@ -1314,32 +1312,59 @@
           $(id).textContent = text;
           setTimeout(function () { if ($(id).textContent === text) $(id).textContent = ""; }, 4000);
         }
+        function saveCheck(btnId, msgId, type, inputs, results, summary) {
+          var btn = $(btnId);
+          if (btn.disabled) return;
+          if (!xAuth.user()) { flashMsg(msgId, "Please log in to save."); return; }
+          busy(btn, true);
+          $(msgId).textContent = "";
+          var p;
+          try { p = xAuth.addCheck(type, inputs, results, summary); } catch (err) { p = Promise.reject(err); }
+          p.then(function () {
+            flashMsg(msgId, "Saved to My saved checks.");
+            renderSaved();
+          }, function (err) {
+            log("Save failed", err);
+            flashMsg(msgId, xAuth.friendly(err, "Could not save. Please try again."));
+          }).then(function () { busy(btn, false); });
+        }
         on($("el-save"), ["click"], safe(function () {
           var st = getState();
-          var who = [st.home ? "Household" : "", st.farm ? "Farmer" : ""].filter(Boolean).join(" + ") || "No choice";
-          var ok = xAuth.addHistory({ type: "elig", label: "Eligibility check · " + who, summary: lastSummary, data: { checker: st, calc: C.getState() } });
-          flashMsg("el-save-msg", ok ? "Saved to My saved checks." : "Please log in to save.");
+          var res = { household: st.home ? homeResult() : null, farmer: st.farm ? farmResult() : null };
+          saveCheck("el-save", "el-save-msg", "eligibility", { checker: st, calc: C.getState() }, res, lastSummary);
         }));
         on($("calc-save"), ["click"], safe(function () {
           var r = C.result();
           var text = r ? r.units.toFixed(0) + " units · " + r.kw + " kW · subsidy " + rs(r.sub) + " · net " + rs(r.net) + " · payback " + (r.yearly > 0 ? r.payback.toFixed(1) + " yrs" : "—") : "";
-          var ok = xAuth.addHistory({ type: "calc", label: "Savings calculation", summary: text, data: { calc: C.getState(), result: r } });
-          flashMsg("calc-save-msg", ok ? "Saved to My saved checks." : "Please log in to save.");
+          saveCheck("calc-save", "calc-save-msg", "calculator", C.getState(), r || {}, text);
         }));
 
+        var savedItems = [];
+        var savedReq = 0;
+        function savedNote(text) { $("saved-list").innerHTML = "<li><div><small>" + esc(text) + "</small></div></li>"; }
         function renderSaved() {
-          var items = xAuth.history();
-          if (!items.length) {
-            $("saved-list").innerHTML = '<li><div><small>Nothing saved yet. Use "Save my result" in the calculator or the checker.</small></div></li>';
-            return;
-          }
-          $("saved-list").innerHTML = items.map(function (h) {
-            var d = new Date(h.date);
-            var when = isNaN(d.getTime()) ? "" : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-            return '<li><div><b>' + esc(h.label) + "</b><small>" + esc(when) + "</small><small>" + esc(h.summary) + '</small></div>' +
-              '<div class="x-actions"><button type="button" class="btn" data-act="load" data-id="' + esc(h.id) + '">Load</button>' +
-              '<button type="button" class="btn" data-act="del" data-id="' + esc(h.id) + '">Delete</button></div></li>';
-          }).join("");
+          if (!xAuth.user()) return;
+          var req = ++savedReq;
+          if (!savedItems.length) savedNote("Loading your saved checks…");
+          var p;
+          try { p = xAuth.listChecks(); } catch (err) { p = Promise.reject(err); }
+          p.then(function (items) {
+            if (req !== savedReq) return;
+            savedItems = items || [];
+            if (!savedItems.length) { savedNote('Nothing saved yet. Use "Save my result" in the calculator or the checker.'); return; }
+            $("saved-list").innerHTML = savedItems.map(function (h) {
+              var when = h.date && !isNaN(h.date.getTime()) ? h.date.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+              var label = h.type === "eligibility" ? "Eligibility check" : "Savings calculation";
+              return '<li><div><b>' + esc(label) + "</b><small>" + esc(when) + "</small><small>" + esc(h.summary) + '</small></div>' +
+                '<div class="x-actions"><button type="button" class="btn" data-act="load" data-id="' + esc(h.id) + '">Load</button>' +
+                '<button type="button" class="btn" data-act="del" data-id="' + esc(h.id) + '">Delete</button></div></li>';
+            }).join("");
+          }, function (err) {
+            if (req !== savedReq) return;
+            log("Could not load saved checks", err);
+            savedItems = [];
+            savedNote(xAuth.friendly(err, "Could not load your saved checks. Please try again."));
+          });
         }
         function go(id) {
           var el = $(id);
@@ -1350,26 +1375,45 @@
           while (t && t !== $("saved-list") && !(t.getAttribute && t.getAttribute("data-act"))) t = t.parentNode;
           if (!t || !t.getAttribute || !t.getAttribute("data-act")) return;
           var act = t.getAttribute("data-act"), hid = t.getAttribute("data-id");
-          var item = xAuth.history().filter(function (h) { return h.id === hid; })[0];
-          if (!item) return;
-          if (act === "del") { xAuth.removeHistory(hid); return; }
-          if (item.data && item.data.calc) C.setState(item.data.calc);
-          if (item.type === "elig" && item.data && item.data.checker) { setState(item.data.checker); go("eligibility"); }
-          else go("calculator");
+          var item = savedItems.filter(function (h) { return h.id === hid; })[0];
+          if (!item || t.disabled) return;
+          if (act === "del") {
+            busy(t, true);
+            xAuth.removeCheck(hid).then(function () {
+              savedItems = savedItems.filter(function (h) { return h.id !== hid; });
+              renderSaved();
+            }, function (err) {
+              log("Delete failed", err);
+              busy(t, false);
+              window.alert(xAuth.friendly(err, "Could not delete. Please try again."));
+            });
+            return;
+          }
+          var inp = item.inputs || {};
+          if (item.type === "eligibility") {
+            if (inp.calc) C.setState(inp.calc);
+            if (inp.checker) setState(inp.checker);
+            go("eligibility");
+          } else {
+            C.setState(inp);
+            go("calculator");
+          }
         }));
 
         function renderAuth() {
+          var avail = xAuth.available();
           var u = xAuth.user();
           var inn = !!u;
+          offNote.hidden = avail;
           hi.hidden = !inn;
           hi.textContent = inn ? "Hi, " + firstName() : "";
-          loginBtn.hidden = inn;
-          logoutBtn.hidden = !inn;
+          loginBtn.hidden = !avail || inn;
+          logoutBtn.hidden = !avail || !inn;
           $("calc-save-wrap").hidden = !inn;
           $("el-save-wrap").hidden = !inn;
           $("saved-panel").hidden = !inn;
-          $("saved-mem").hidden = !xAuth.memMode();
           if (inn) renderSaved();
+          else { savedItems = []; savedReq++; $("saved-list").innerHTML = ""; }
           update();
         }
         xAuth.onChange(safe(renderAuth));
