@@ -33,22 +33,47 @@
       .x-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
       .x-row output { font: var(--type-heading); font-variant-numeric: tabular-nums; }
       .x-reset { font: var(--type-tag); color: var(--text-secondary); background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: var(--tap); padding: 0; justify-self: start; }
-      .x-out { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-      .x-out > div { display: grid; gap: 4px; padding: 18px 20px; border-radius: var(--r-m); border: 1px solid var(--stroke-secondary); }
-      .x-out > .x-wide { grid-column: 1 / -1; background: var(--fill-primary); color: var(--text-primary-on); border-color: transparent; }
-      .x-out b { font: var(--type-figure); font-variant-numeric: tabular-nums; }
-      .x-out span { font-size: var(--size-small); color: var(--text-secondary); }
-      .x-out .x-wide span { color: inherit; opacity: 0.8; }
-      .x-out .x-note { font-size: var(--size-caption); line-height: 1.4; color: var(--text-primary); padding-top: 4px; }
-      .x-out .x-note[hidden] { display: none; }
-      .x-out > div.x-flash { animation: x-flash 0.6s var(--ease-out); }
-      @keyframes x-flash { 0% { opacity: 0.35; } 100% { opacity: 1; } }
-      @media (prefers-reduced-motion: reduce) { .x-out > div.x-flash { animation: none; } }
+      /* Step-form calculator */
+      .x-sf { --x-green: color-mix(in srgb, var(--fill-system-green) 68%, var(--text-primary)); display: grid; gap: 20px; max-width: 560px; }
+      .x-sf .x-panel { gap: 22px; }
+      .x-step { display: grid; gap: 8px; }
+      .x-step > label, .x-step .x-lbl { font: var(--type-body-strong); color: var(--text-primary); }
+      .x-step small { font: var(--type-caption); color: var(--text-secondary); }
+      .x-big {
+        font: var(--weight-regular) var(--size-prose)/var(--lh) var(--sans); color: var(--text-primary); background: var(--fill-primary-on);
+        border: 1px solid var(--stroke-primary); border-radius: var(--r-m); padding: 12px 16px; min-height: 52px; width: 100%;
+      }
+      select.x-big { appearance: none; -webkit-appearance: none; padding-right: 44px; cursor: pointer;
+        background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+        background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%; background-size: 6px 6px; background-repeat: no-repeat; }
+      .x-big:focus-visible { outline: 2px solid var(--fill-system-green); outline-offset: 1px; }
+      .x-adv { border-top: 1px solid var(--stroke-primary); padding-top: 4px; }
+      .x-adv summary { font: var(--type-label); min-height: var(--tap); display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; }
+      .x-adv summary::-webkit-details-marker { display: none; }
+      .x-adv summary::after { content: "+"; font: var(--type-heading); color: var(--text-secondary); }
+      .x-adv[open] summary::after { content: "\2212"; }
+      .x-adv__body { display: grid; gap: 16px; padding: 8px 0 4px; }
+      #calc .x-go {
+        width: 100%; min-height: 56px; border: 0; border-radius: var(--r-m); cursor: pointer; -webkit-appearance: none; appearance: none;
+        background-color: rgb(0 120 73); color: var(--hero-text); font: var(--type-body-strong); font-size: var(--size-prose);
+        transition: filter var(--dur-quick) var(--ease-out);
+      }
+      .x-go:hover { filter: brightness(1.08); }
+      .x-go:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+      .x-result { display: grid; gap: 12px; scroll-margin-top: 80px; }
+      .x-result[hidden] { display: none; }
+      .x-result h3 { font: var(--type-heading); }
+      .x-rc { display: grid; gap: 4px; padding: 18px 20px; border-radius: var(--r-m); }
+      .x-rc:nth-of-type(3n+1) { background: color-mix(in srgb, var(--fill-system-green) 13%, var(--fill-primary-on)); }
+      .x-rc:nth-of-type(3n+2) { background: color-mix(in srgb, var(--chart-1) 32%, var(--fill-primary-on)); }
+      .x-rc:nth-of-type(3n) { background: color-mix(in srgb, var(--chart-3) 30%, var(--fill-primary-on)); }
+      .x-rc > span { font: var(--type-label); color: var(--text-primary); }
+      .x-rc b { font: var(--type-figure); font-weight: var(--weight-bold); color: var(--x-green); font-variant-numeric: tabular-nums; }
+      .x-rc small { font: var(--type-caption); color: var(--text-secondary); }
+      .x-rc small:empty { display: none; }
       .x-try { display: flex; flex-wrap: wrap; gap: 8px; }
       .x-try button { font: inherit; cursor: pointer; }
-      .x-photo { margin: 16px 0 0; }
-      .x-photo img { width: 100%; max-height: 360px; object-fit: contain; border-radius: var(--r-m); background: var(--fill-tertiary); }
-      .x-photo figcaption, .x-gal figcaption { font-size: var(--size-caption); color: var(--text-secondary); padding: 8px 4px 0; }
+      .x-gal figcaption { font-size: var(--size-caption); color: var(--text-secondary); padding: 8px 4px 0; }
       .x-faq { display: grid; gap: 8px; max-width: 72ch; }
       .x-faq details { border-radius: var(--r-m); background: var(--fill-tertiary); padding: 0 20px; }
       .x-faq summary { font: var(--type-label); min-height: var(--tap); display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; padding: 12px 0; }
@@ -151,7 +176,7 @@
       @media (pointer: coarse), (max-width: 599px) { .x-login { min-height: var(--tap); } }
       @media (max-width: 599px) { .x-hi { max-width: 6em; } .x-res { padding: 18px; } }
       @media (max-width: 899px) { .x-calc { grid-template-columns: 1fr; } .x-gal { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-      @media (max-width: 599px) { .x-gal { grid-template-columns: 1fr; } .x-out { gap: 8px; } .x-out > div { padding: 14px 16px; } .x-out b { font-size: 24px; } }
+      @media (max-width: 599px) { .x-gal { grid-template-columns: 1fr; } .x-rc { padding: 16px 18px; } }
     </style>
   </head>
   <body>
@@ -194,59 +219,68 @@
         <section class="section" id="calculator" data-nav="Calculator">
           <div class="head">
             <p class="head__eyebrow">Solar Savings &amp; Subsidy Calculator</p>
-            <h2>Enter your usage and see what a rooftop plant would save.</h2>
-            <p class="head__sub">Results update as you type.</p>
+            <h2>Three questions, then see the system you need.</h2>
+            <p class="head__sub">Size, cost, subsidy, savings and payback for your home, shop or farm.</p>
           </div>
-          <div class="x-calc">
-            <div>
-              <form class="x-panel" id="calc" onsubmit="return false">
-                <div class="x-try">
-                  <button type="button" class="btn" id="try-example">Example</button>
-                  <button type="button" class="btn" id="try-350">Try 350 units</button>
-                </div>
-                <div class="x-field">
-                  <div class="x-row"><label for="usage" id="usage-lbl">Average monthly use, units (kWh)</label><button type="button" class="x-reset" id="mode-toggle" aria-pressed="false">Enter bill in ₹ instead</button></div>
-                  <input type="text" id="usage" value="200" inputmode="decimal" autocomplete="off" />
-                  <small id="usage-note">About ₹1,200 a month at your tariff</small>
-                </div>
-                <div class="x-field">
-                  <label for="tariff">Electricity tariff, ₹ per unit</label>
-                  <input type="text" id="tariff" value="6" inputmode="decimal" autocomplete="off" />
-                  <small>Example rate, check your bill</small>
-                </div>
-                <div class="x-field">
-                  <label for="cost">Installation cost per kW, ₹</label>
-                  <input type="text" id="cost" value="60000" inputmode="decimal" autocomplete="off" />
-                  <small>Example only, take a quote from a registered vendor</small>
-                </div>
-                <div class="x-field">
-                  <div class="x-row"><label for="kw">Plant size</label><output id="kw-out" for="kw">3 kW</output></div>
-                  <input type="range" id="kw" min="1" max="10" step="1" value="2" />
-                  <small id="kw-note">Suggested for your usage. Drag to try another size.</small>
-                  <button type="button" class="x-reset" id="kw-reset" hidden>Back to suggested size</button>
-                </div>
-              </form>
-              <figure class="x-photo">
-                <img src="photo3.jpg" alt="A rooftop solar plant on a house in Chandragudem" />
-                <figcaption>A rooftop solar plant in Chandragudem</figcaption>
-              </figure>
-            </div>
-            <div>
-              <div class="x-out" aria-live="polite">
-                <div class="x-wide"><span>25-year saving, approx.</span><b id="o-25">₹0</b></div>
-                <div><span>Suggested size</span><b id="o-size">2 kW</b><span id="o-band">150–300 units: 2–3 kW</span></div>
-                <div><span>Subsidy</span><b id="o-sub">₹0</b><p class="x-note" id="n-sub" hidden>Subsidy is capped at ₹78,000 for 3 kW and above.</p></div>
-                <div><span>Net cost after subsidy</span><b id="o-net">₹0</b></div>
-                <div><span>Payback period</span><b id="o-pay">0 yrs</b></div>
-                <div><span>Monthly saving</span><b id="o-month">₹0</b><span id="o-gen">Generates ~240 units</span><p class="x-note" id="n-gen" hidden>Your plant makes more than you use, so savings are limited by your usage. Extra units go to the grid (net metering).</p></div>
-                <div><span>Yearly saving</span><b id="o-year">₹0</b></div>
+          <div class="x-sf">
+            <form class="x-panel" id="calc" novalidate>
+              <div class="x-step">
+                <label for="usage" id="usage-lbl">1. Monthly electricity bill (₹)</label>
+                <input type="number" class="x-big" id="usage" value="1000" min="0" step="any" inputmode="decimal" autocomplete="off" />
+                <button type="button" class="x-reset" id="mode-toggle" aria-pressed="false">I know my units instead</button>
               </div>
-              <p class="fineprint" style="margin-top: 12px">Generation is taken as about 120 units per kW per month: approximate; actual output depends on sunlight and panel condition.</p>
-              <p class="fineprint">Estimates for awareness only. Rates from pmsuryaghar.gov.in; costs vary by vendor.</p>
-              <div class="x-auth x-actions" id="calc-save-wrap" hidden style="margin-top: 12px">
+              <div class="x-step">
+                <label for="backup">2. Do you want backup during power cuts?</label>
+                <select class="x-big" id="backup">
+                  <option value="no" selected>No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+              <div class="x-step">
+                <label for="prop">3. Property type</label>
+                <select class="x-big" id="prop">
+                  <option value="home" selected>Home</option>
+                  <option value="shop">Shop</option>
+                  <option value="farm">Farm (pump)</option>
+                </select>
+              </div>
+              <details class="x-adv">
+                <summary>Advanced</summary>
+                <div class="x-adv__body">
+                  <p class="fineprint">Example values: change them to match your bill and a vendor's quote.</p>
+                  <div class="x-step">
+                    <label for="tariff">Tariff, ₹ per unit <small>(example)</small></label>
+                    <input type="number" class="x-big" id="tariff" value="7" min="0" step="any" inputmode="decimal" autocomplete="off" />
+                  </div>
+                  <div class="x-step">
+                    <label for="cost">Cost per kW, on-grid, ₹ <small>(example)</small></label>
+                    <input type="number" class="x-big" id="cost" value="60000" min="0" step="any" inputmode="decimal" autocomplete="off" />
+                  </div>
+                  <div class="x-step">
+                    <label for="cost-bat">Cost per kW with battery, ₹ <small>(example)</small></label>
+                    <input type="number" class="x-big" id="cost-bat" value="90000" min="0" step="any" inputmode="decimal" autocomplete="off" />
+                  </div>
+                </div>
+              </details>
+              <button type="submit" class="x-go" id="calc-go">Calculate Solar Requirement</button>
+            </form>
+
+            <div class="x-result" id="calc-result" tabindex="-1" aria-live="polite" hidden>
+              <h3>Your Solar Recommendation</h3>
+              <div class="x-rc"><span>Estimated monthly units</span><b id="r-units">0</b><small id="r-units-n"></small></div>
+              <div class="x-rc"><span>Recommended system</span><b id="r-kw">0 kW</b><small id="r-kw-n"></small></div>
+              <div class="x-rc"><span>System type</span><b id="r-type">On-grid</b></div>
+              <div class="x-rc"><span>Approximate system cost</span><b id="r-cost">₹0</b><small id="r-cost-n"></small></div>
+              <div class="x-rc"><span>Estimated government subsidy</span><b id="r-sub">₹0</b><small id="r-sub-n"></small></div>
+              <div class="x-rc"><span id="r-net-l">Cost after subsidy</span><b id="r-net">₹0</b><small id="r-net-n"></small></div>
+              <div class="x-rc"><span>Estimated monthly savings</span><b id="r-save">₹0</b><small id="r-save-n"></small></div>
+              <div class="x-rc"><span>Estimated payback</span><b id="r-pay">0 years</b></div>
+              <div class="links"><a class="btn" href="#eligibility">Check scheme eligibility</a></div>
+              <div class="x-auth x-actions" id="calc-save-wrap" hidden>
                 <button type="button" class="btn" id="calc-save">Save my result</button>
                 <span class="x-msg" id="calc-save-msg" role="status"></span>
               </div>
+              <p class="fineprint">All figures are indicative estimates. Actual cost, savings, subsidy eligibility and payback depend on site conditions, battery, DISCOM rules and current government schemes.</p>
             </div>
           </div>
         </section>
@@ -416,36 +450,47 @@
             <h2>How the numbers are calculated</h2>
             <p class="head__sub">The same rules drive the calculator and the checker.</p>
           </div>
-          <div class="pair">
-            <div class="breakdown">
-              <dl>
-                <div class="row"><dt>0–150 units a month</dt><dd>1–2 kW</dd></div>
-                <div class="row"><dt>150–300 units</dt><dd>2–3 kW</dd></div>
-                <div class="row"><dt>Above 300 units</dt><dd>3 kW+</dd></div>
-              </dl>
-              <p class="fineprint">Plant size, from PM Surya Ghar portal guidance.</p>
-            </div>
-            <div class="breakdown">
-              <dl>
-                <div class="row"><dt>1 kW</dt><dd>₹30,000</dd></div>
-                <div class="row"><dt>2 kW</dt><dd>₹60,000</dd></div>
-                <div class="row"><dt>3 kW or more</dt><dd>₹78,000</dd></div>
-              </dl>
-              <p class="fineprint">Subsidy: ₹30,000 per kW up to 2 kW, ₹18,000 for the 3rd kW, capped at ₹78,000.</p>
-            </div>
-          </div>
-          <div class="prose">
-            <p><strong>Generation:</strong> about 120 units per kW per month (approximate).</p>
-            <p><strong>Monthly saving</strong> = the smaller of (generation, usage) × tariff. <strong>Payback</strong> = net cost ÷ yearly saving.</p>
-          </div>
-          <h3 class="x-group">Worked example: 200 units, ₹6 per unit, ₹60,000 per kW</h3>
           <div class="breakdown">
             <dl>
-              <div class="row"><dt>Plant size <small>200 units is in the 150–300 band</small></dt><dd>2 kW</dd></div>
-              <div class="row"><dt>Subsidy <small>2 × ₹30,000</small></dt><dd>₹60,000</dd></div>
-              <div class="row"><dt>Net cost <small>2 × ₹60,000 − ₹60,000</small></dt><dd>₹60,000</dd></div>
-              <div class="row"><dt>Monthly saving <small>Makes 240 units, uses 200: 200 × ₹6</small></dt><dd>₹1,200</dd></div>
-              <div class="row row--total"><dt>Payback <small>₹60,000 ÷ ₹14,400 a year</small></dt><dd>4.2 years</dd></div>
+              <div class="row"><dt>Monthly units <small>Rounded for display</small></dt><dd>bill ÷ tariff</dd></div>
+              <div class="row"><dt>System size <small>Rounded up to 0.1 kW; at least 1 kW for a home on-grid system</small></dt><dd>units ÷ 120</dd></div>
+              <div class="row"><dt>System cost <small>Battery rate when backup is Yes</small></dt><dd>kW × cost per kW</dd></div>
+              <div class="row"><dt>Cost after subsidy <small>Farm: the farmer's 40% share</small></dt><dd>cost − subsidy</dd></div>
+              <div class="row"><dt>Monthly savings <small>A plant makes about 120 units per kW a month (approximate)</small></dt><dd>min(units, kW × 120) × tariff</dd></div>
+              <div class="row"><dt>Payback <small>In years, 1 decimal</small></dt><dd>cost after subsidy ÷ (savings × 12)</dd></div>
+            </dl>
+          </div>
+          <div class="pair">
+            <div class="table-wrap">
+              <table>
+                <caption>System type</caption>
+                <thead><tr><th scope="col">Property</th><th scope="col">Backup: No</th><th scope="col">Backup: Yes</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Home</th><td>On-grid (net metering)</td><td>Hybrid (with battery)</td></tr>
+                  <tr><th scope="row">Shop</th><td>On-grid</td><td>Hybrid (with battery)</td></tr>
+                  <tr><th scope="row">Farm (pump)</th><td>Solar pump (PM-KUSUM)</td><td>Solar pump (PM-KUSUM)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="breakdown">
+              <dl>
+                <div class="row"><dt>Home <small>PM Surya Ghar: ₹30,000/kW up to 2 kW, ₹18,000 for the 3rd kW, cap ₹78,000. Grid-connected systems; battery cost is not subsidised.</small></dt><dd>up to ₹78,000</dd></div>
+                <div class="row"><dt>Shop <small>Residential only</small></dt><dd>Not applicable</dd></div>
+                <div class="row"><dt>Farm <small>PM-KUSUM; check with NREDCAP</small></dt><dd>Centre 30% + State 30%</dd></div>
+              </dl>
+              <p class="fineprint">Subsidy by property type.</p>
+            </div>
+          </div>
+          <h3 class="x-group">Worked example: Home, ₹1,000 bill, ₹7 per unit, no backup</h3>
+          <div class="breakdown">
+            <dl>
+              <div class="row"><dt>Monthly units <small>₹1,000 ÷ ₹7</small></dt><dd>143</dd></div>
+              <div class="row"><dt>System size <small>143 ÷ 120 = 1.19, rounded up; on-grid (net metering)</small></dt><dd>1.2 kW</dd></div>
+              <div class="row"><dt>System cost <small>1.2 × ₹60,000</small></dt><dd>₹72,000</dd></div>
+              <div class="row"><dt>Subsidy <small>1.2 × ₹30,000</small></dt><dd>₹36,000</dd></div>
+              <div class="row"><dt>Cost after subsidy <small>₹72,000 − ₹36,000</small></dt><dd>₹36,000</dd></div>
+              <div class="row"><dt>Monthly savings <small>Makes 144 units, uses 143: all usage × ₹7</small></dt><dd>₹1,000</dd></div>
+              <div class="row row--total"><dt>Payback <small>₹36,000 ÷ ₹12,000 a year</small></dt><dd>3.0 years</dd></div>
             </dl>
           </div>
           <div class="prose">
@@ -692,9 +737,8 @@
       function xCalcSetup() {
         var $ = function (id) { return document.getElementById(id); };
         if (!$("calc") || !$("usage")) return;
-        var mode = "units";
-        var override = null;
-        var last = null;
+        var mode = "bill";
+        var shown = false;
         var rs = function (n) { return "₹" + Math.round(n).toLocaleString("en-IN"); };
         var num = function (el) {
           var raw = String((el && el.value) || "").replace(/[\s₹]/g, "");
@@ -704,25 +748,20 @@
           var v = parseFloat(raw);
           return isFinite(v) && v > 0 ? v : 0;
         };
-        function flash() {
-          var cards = document.querySelectorAll(".x-out > div");
-          for (var i = 0; i < cards.length; i++) {
-            var c = cards[i];
-            c.classList.remove("x-flash");
-            void c.offsetWidth;
-            c.classList.add("x-flash");
-          }
-        }
-
-        function suggest(u) {
-          if (u <= 150) return { kw: u <= 75 ? 1 : 2, band: "0–150 units: 1–2 kW" };
-          if (u <= 300) return { kw: u > 225 ? 3 : 2, band: "150–300 units: 2–3 kW" };
-          return { kw: Math.max(3, Math.ceil(u / 120)), band: "Above 300 units: 3 kW or more" };
-        }
+        var kwFmt = function (k) { return (Math.round(k * 10) / 10).toLocaleString("en-IN", { maximumFractionDigits: 1 }) + " kW"; };
+        function sizeFor(u) { return u > 0 ? Math.ceil(u / 120 * 10 - 1e-9) / 10 : 0; }
+        // Home on-grid size; used by the eligibility checker too.
+        function suggest(u) { return { kw: Math.max(1, sizeFor(u)), band: "Units ÷ 120, rounded up to 0.1 kW" }; }
         function subsidy(kw) {
-          if (kw >= 3) return 78000;
-          return kw <= 2 ? kw * 30000 : 60000 + (kw - 2) * 18000;
+          var s = Math.min(kw, 2) * 30000 + Math.max(0, Math.min(kw, 3) - 2) * 18000;
+          return Math.round(Math.min(78000, s));
         }
+        var TYPES = {
+          home: { no: "On-grid (net metering)", yes: "Hybrid (with battery)" },
+          shop: { no: "On-grid", yes: "Hybrid (with battery)" },
+          farm: { no: "Solar pump (PM-KUSUM)", yes: "Solar pump (PM-KUSUM)" }
+        };
+        function setText(id, t) { $(id).textContent = t; }
 
         function update() {
           try { render(); } catch (e) { if (window.console) console.error("Calculator update failed", e); }
@@ -732,39 +771,46 @@
           var tariff = num($("tariff"));
           var input = num($("usage"));
           var units = mode === "units" ? input : (tariff ? input / tariff : 0);
-          $("usage-note").textContent = mode === "units"
-            ? "About " + rs(units * tariff) + " a month at your tariff"
-            : "About " + Math.round(units).toLocaleString("en-IN") + " units a month at your tariff";
-          var s = suggest(units);
-          var kw = override || Math.min(10, s.kw);
-          $("kw").value = kw;
-          $("kw-out").textContent = kw + " kW";
-          $("kw-note").textContent = override ? "Your choice. Suggested: " + s.kw + " kW." : "Suggested for your usage. Drag to try another size.";
-          $("kw-reset").hidden = !override;
-
-          var sub = subsidy(kw);
+          var prop = $("prop").value, backup = $("backup").value;
+          var type = (TYPES[prop] || TYPES.home)[backup === "yes" ? "yes" : "no"];
+          var kw = sizeFor(units);
+          if (prop === "home" && backup !== "yes") kw = Math.max(1, kw);
+          var battery = backup === "yes" && prop !== "farm";
+          var rate = battery ? num($("cost-bat")) : num($("cost"));
+          var cost = kw * rate;
+          var sub = 0, net = cost;
+          if (prop === "home") { sub = subsidy(kw); net = Math.max(0, cost - sub); }
+          else if (prop === "farm") { sub = cost * 0.6; net = cost * 0.4; }
           var gen = kw * 120;
-          var monthly = Math.min(gen, units) * tariff;
+          var monthly = Math.min(units, gen) * tariff;
           var yearly = monthly * 12;
-          var net = Math.max(0, kw * num($("cost")) - sub);
-          var life = yearly * 25 - net;
+          var payback = yearly > 0 ? net / yearly : 0;
 
-          $("o-size").textContent = s.kw + " kW";
-          $("o-band").textContent = s.band;
-          $("o-sub").textContent = rs(sub);
-          $("o-net").textContent = rs(net);
-          $("o-month").textContent = rs(monthly);
-          $("o-gen").textContent = kw + " kW makes ~" + gen.toLocaleString("en-IN") + " units";
-          $("o-year").textContent = rs(yearly);
-          $("o-pay").textContent = yearly > 0 ? (net / yearly).toFixed(1) + " yrs" : "—";
-          $("o-25").textContent = (life < 0 ? "−" : "") + rs(Math.abs(life));
-          $("n-gen").hidden = !(units > 0 && gen > units);
-          $("n-sub").hidden = !(kw >= 3);
+          setText("r-units", Math.round(units).toLocaleString("en-IN") + " units");
+          setText("r-units-n", mode === "units" ? "Bill about " + rs(units * tariff) + " a month at " + rs(tariff) + " per unit" : rs(input) + " ÷ " + rs(tariff) + " per unit");
+          setText("r-kw", kwFmt(kw));
+          setText("r-kw-n", kw > 0 ? "Makes about " + Math.round(gen).toLocaleString("en-IN") + " units a month" : "");
+          setText("r-type", type);
+          setText("r-cost", rs(cost));
+          setText("r-cost-n", kwFmt(kw) + " × " + rs(rate) + " per kW" + (battery ? " (with battery)" : prop === "farm" ? " (solar pumps need no battery)" : ""));
+          if (prop === "home") {
+            setText("r-sub", rs(sub));
+            setText("r-sub-n", "PM Surya Ghar, for grid-connected systems; battery cost is not subsidised.");
+          } else if (prop === "shop") {
+            setText("r-sub", "Not applicable");
+            setText("r-sub-n", "Residential only.");
+          } else {
+            setText("r-sub", "Centre 30% + State 30%");
+            setText("r-sub-n", "About " + rs(sub) + " under PM-KUSUM, check with NREDCAP.");
+          }
+          setText("r-net-l", prop === "farm" ? "Cost after subsidy (farmer's share)" : "Cost after subsidy");
+          setText("r-net", rs(net));
+          setText("r-net-n", prop === "farm" ? "Farmer pays 40% of " + rs(cost) : prop === "shop" ? "No subsidy for shops" : "");
+          setText("r-save", rs(monthly) + " a month");
+          setText("r-save-n", units > gen ? "Your plant covers " + Math.round(gen).toLocaleString("en-IN") + " of your units" : "");
+          setText("r-pay", yearly > 0 ? payback.toFixed(1) + " years" : "—");
 
-          var snap = [mode, units, tariff, kw, num($("cost"))].join("|");
-          if (last !== null && snap !== last) flash();
-          last = snap;
-          lastResult = { units: units, tariff: tariff, kw: kw, suggested: s.kw, sub: sub, net: net, monthly: monthly, yearly: yearly, payback: yearly > 0 ? net / yearly : 0, life: life };
+          lastResult = { units: units, tariff: tariff, prop: prop, backup: backup, type: type, kw: Math.round(kw * 10) / 10, cost: cost, sub: sub, net: net, monthly: monthly, yearly: yearly, payback: payback };
           for (var i = 0; i < listeners.length; i++) {
             try { listeners[i](units); } catch (e) { if (window.console) console.error("Calculator listener failed", e); }
           }
@@ -773,9 +819,19 @@
         var lastResult = null;
 
         function labels() {
-          $("mode-toggle").setAttribute("aria-pressed", mode === "bill" ? "true" : "false");
-          $("mode-toggle").textContent = mode === "units" ? "Enter bill in ₹ instead" : "Enter units instead";
-          $("usage-lbl").textContent = mode === "units" ? "Average monthly use, units (kWh)" : "Average monthly bill, ₹";
+          $("mode-toggle").setAttribute("aria-pressed", mode === "units" ? "true" : "false");
+          $("mode-toggle").textContent = mode === "units" ? "I know my bill instead" : "I know my units instead";
+          $("usage-lbl").textContent = mode === "units" ? "1. Monthly units used (kWh)" : "1. Monthly electricity bill (₹)";
+        }
+        function reveal(scroll) {
+          var box = $("calc-result");
+          var first = box.hidden;
+          box.hidden = false;
+          shown = true;
+          if (!scroll) return;
+          var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          try { box.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); } catch (e) { box.scrollIntoView(); }
+          if (first) { try { box.focus({ preventScroll: true }); } catch (e) {} }
         }
 
         // Shared with the eligibility checker and the saved checks.
@@ -791,62 +847,46 @@
             $("usage").value = mode === "units" ? Math.round(u * 100) / 100 : Math.round(u * t);
             update();
           },
-          getState: function () { return { mode: mode, usage: $("usage").value, tariff: $("tariff").value, cost: $("cost").value, kw: override }; },
+          getState: function () {
+            return { mode: mode, usage: $("usage").value, backup: $("backup").value, prop: $("prop").value, tariff: $("tariff").value, cost: $("cost").value, costBat: $("cost-bat").value };
+          },
           setState: function (s) {
             if (!s) return;
-            mode = s.mode === "bill" ? "bill" : "units";
+            mode = s.mode === "units" ? "units" : "bill";
             labels();
-            $("usage").value = s.usage;
-            $("tariff").value = s.tariff;
-            $("cost").value = s.cost;
-            override = s.kw ? parseInt(s.kw, 10) || null : null;
+            if (s.usage != null) $("usage").value = num({ value: s.usage }) || s.usage;
+            $("backup").value = s.backup === "yes" ? "yes" : "no";
+            $("prop").value = s.prop === "shop" || s.prop === "farm" ? s.prop : "home";
+            if (s.tariff != null) $("tariff").value = num({ value: s.tariff }) || 7;
+            if (s.cost != null) $("cost").value = num({ value: s.cost }) || 60000;
+            if (s.costBat != null) $("cost-bat").value = num({ value: s.costBat }) || 90000;
             update();
+            reveal(false);
           },
-          result: function () { return lastResult; },
+          result: function () { return shown ? lastResult : null; },
           onChange: function (fn) { listeners.push(fn); }
         };
-
-        function fill(units) {
-          if (mode !== "units") {
-            mode = "units";
-            $("mode-toggle").setAttribute("aria-pressed", "false");
-            $("mode-toggle").textContent = "Enter bill in ₹ instead";
-            $("usage-lbl").textContent = "Average monthly use, units (kWh)";
-          }
-          $("usage").value = units;
-          $("tariff").value = 6;
-          $("cost").value = 60000;
-          override = null;
-          update();
-        }
 
         function setMode(m) {
           if (m === mode) return;
           var tariff = num($("tariff"));
           var v = num($("usage"));
-          if (tariff) $("usage").value = m === "bill" ? Math.round(v * tariff) : Math.round(v / tariff);
+          if (tariff && v) $("usage").value = m === "bill" ? Math.round(v * tariff) : Math.round(v / tariff);
           mode = m;
-          $("mode-toggle").setAttribute("aria-pressed", m === "bill");
-          $("mode-toggle").textContent = m === "units" ? "Enter bill in ₹ instead" : "Enter units instead";
-          $("usage-lbl").textContent = m === "units" ? "Average monthly use, units (kWh)" : "Average monthly bill, ₹";
-          update();
-        }
-
-        function onKw() {
-          var v = parseInt($("kw").value, 10);
-          override = isFinite(v) && v > 0 ? v : null;
+          labels();
           update();
         }
 
         $("mode-toggle").addEventListener("click", function () { setMode(mode === "units" ? "bill" : "units"); });
-        ["usage", "tariff", "cost"].forEach(function (id) {
-          ["input", "change", "keyup", "blur"].forEach(function (ev) { $(id).addEventListener(ev, update); });
+        ["usage", "tariff", "cost", "cost-bat", "backup", "prop"].forEach(function (id) {
+          ["input", "change"].forEach(function (ev) { $(id).addEventListener(ev, update); });
         });
-        $("kw").addEventListener("input", onKw);
-        $("kw").addEventListener("change", onKw);
-        $("kw-reset").addEventListener("click", function () { override = null; update(); });
-        $("try-example").addEventListener("click", function () { fill(200); });
-        $("try-350").addEventListener("click", function () { fill(350); });
+        $("calc").addEventListener("submit", function (e) {
+          e.preventDefault();
+          update();
+          reveal(true);
+        });
+        labels();
         update();
       }
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", xCalcSetup);
@@ -1335,7 +1375,8 @@
         }));
         on($("calc-save"), ["click"], safe(function () {
           var r = C.result();
-          var text = r ? r.units.toFixed(0) + " units · " + r.kw + " kW · subsidy " + rs(r.sub) + " · net " + rs(r.net) + " · payback " + (r.yearly > 0 ? r.payback.toFixed(1) + " yrs" : "—") : "";
+          var propName = r ? { home: "Home", shop: "Shop", farm: "Farm" }[r.prop] || "Home" : "";
+          var text = r ? propName + " · " + r.units.toFixed(0) + " units · " + r.kw + " kW " + r.type + " · cost " + rs(r.cost) + (r.prop === "shop" ? "" : " · subsidy " + rs(r.sub)) + " · net " + rs(r.net) + " · saves " + rs(r.monthly) + "/month · payback " + (r.yearly > 0 ? r.payback.toFixed(1) + " yrs" : "—") : "";
           saveCheck("calc-save", "calc-save-msg", "calculator", C.getState(), r || {}, text);
         }));
 
