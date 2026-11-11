@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solar for Chandragudem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap"
+    />
+    <link rel="stylesheet" href="hark.css" />
+    <link rel="stylesheet" href="hark-hero.css" />
+    <style>
+      .x-calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
+      .x-panel { display: grid; gap: 18px; padding: 22px 24px; border-radius: var(--r-m); background: var(--fill-tertiary); }
+      .x-field { display: grid; gap: 6px; }
+      .x-field label, .x-field .x-lbl { font: var(--type-label); color: var(--text-primary); }
+      .x-field small { font: var(--type-caption); color: var(--text-secondary); }
+      .x-field input[type="number"], .x-field input[type="text"] {
+        font: var(--type-body); color: var(--text-primary); background: var(--fill-primary-on);
+        border: 1px solid var(--stroke-primary); border-radius: var(--r-s); padding: 10px 12px; min-height: var(--tap); width: 100%;
+      }
+      .x-field input[type="range"] { width: 100%; min-height: var(--tap); accent-color: var(--fill-primary); }
+      .x-seg { display: inline-flex; gap: 4px; padding: 3px; border-radius: var(--r-pill); border: 1px solid var(--stroke-primary); background: var(--fill-primary-on); width: fit-content; }
+      .x-seg button {
+        font: var(--type-tag); color: var(--text-secondary); background: none; border: 0; border-radius: var(--r-pill);
+        padding: 6px 14px; min-height: 36px; cursor: pointer;
+      }
+      .x-seg button[aria-pressed="true"] { background: var(--fill-primary); color: var(--text-primary-on); }
+      .x-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+      .x-row output { font: var(--type-heading); font-variant-numeric: tabular-nums; }
+      .x-reset { font: var(--type-tag); color: var(--text-secondary); background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: var(--tap); padding: 0; justify-self: start; }
+      .x-out { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .x-out > div { display: grid; gap: 4px; padding: 18px 20px; border-radius: var(--r-m); border: 1px solid var(--stroke-secondary); }
+      .x-out > .x-wide { grid-column: 1 / -1; background: var(--fill-primary); color: var(--text-primary-on); border-color: transparent; }
+      .x-out b { font: var(--type-figure); font-variant-numeric: tabular-nums; }
+      .x-out span { font-size: var(--size-small); color: var(--text-secondary); }
+      .x-out .x-wide span { color: inherit; opacity: 0.8; }
+      .x-out .x-note { font-size: var(--size-caption); line-height: 1.4; color: var(--text-primary); padding-top: 4px; }
+      .x-out .x-note[hidden] { display: none; }
+      .x-out > div.x-flash { animation: x-flash 0.6s var(--ease-out); }
+      @keyframes x-flash { 0% { opacity: 0.35; } 100% { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { .x-out > div.x-flash { animation: none; } }
+      .x-try { display: flex; flex-wrap: wrap; gap: 8px; }
+      .x-try button { font: inherit; cursor: pointer; }
+      .x-photo { margin: 16px 0 0; }
+      .x-photo img { width: 100%; max-height: 360px; object-fit: contain; border-radius: var(--r-m); background: var(--fill-tertiary); }
+      .x-photo figcaption, .x-gal figcaption { font-size: var(--size-caption); color: var(--text-secondary); padding: 8px 4px 0; }
+      .x-faq { display: grid; gap: 8px; max-width: 72ch; }
+      .x-faq details { border-radius: var(--r-m); background: var(--fill-tertiary); padding: 0 20px; }
+      .x-faq summary { font: var(--type-label); min-height: var(--tap); display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; padding: 12px 0; }
+      .x-faq summary::-webkit-details-marker { display: none; }
+      .x-faq summary::after { content: "+"; font: var(--type-heading); color: var(--text-secondary); }
+      .x-faq details[open] summary::after { content: "\2212"; }
+      .x-faq details p { padding: 0 0 16px; color: var(--text-secondary); font: var(--type-body); }
+      .x-gal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .x-gal figure { margin: 0; }
+      .x-gal img { width: 100%; height: auto; border-radius: var(--r-m); background: var(--fill-tertiary); }
+      @media (max-width: 899px) { .x-calc { grid-template-columns: 1fr; } .x-gal { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 599px) { .x-gal { grid-template-columns: 1fr; } .x-out { gap: 8px; } .x-out > div { padding: 14px 16px; } .x-out b { font-size: 24px; } }
+    </style>
+  </head>
+  <body>
+    <div class="page" id="top">
+      <header class="nav glass" data-auto></header>
+      <main class="main">
+        <section class="hero">
+          <img class="hero__img" src="csp_hero.png" alt="Village rooftops with solar panels beside paddy fields" />
+          <div class="hero__copy">
+            <p class="hero__eyebrow">Community Service Project · Dept. of CSE, LBRCE</p>
+            <h1>Solar for Chandragudem</h1>
+            <p class="hero__sub">Awareness of Generation and Utilisation of Solar Energy for Domestic, Industrial and Agricultural Needs</p>
+            <p class="hero__meta">14-05-2026 to 29-06-2026 · Chandragudem, Mylavaram Mandal, NTR District, A.P. 521230</p>
+          </div>
+          <aside class="callout" aria-label="Main action">
+            <p class="callout__head"><span class="hark-mark" data-size="16"></span> Start here</p>
+            <p class="callout__lead"><strong>How much would rooftop solar save you?</strong> See your plant size, subsidy and payback.</p>
+            <div class="links">
+              <a class="btn" href="#calculator">Calculate your solar savings</a>
+              <a class="btn" href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener">Apply on PM Surya Ghar</a>
+            </div>
+          </aside>
+        </section>
+
+        <section class="section" id="village" data-nav="Village">
+          <div class="head">
+            <p class="head__eyebrow">Census 2011</p>
+            <h2>A farming village of 1,400 households, 4 km from Mylavaram.</h2>
+            <p class="head__sub">Main crops: mango, cotton and paddy.</p>
+          </div>
+          <section class="stats">
+            <div class="stat"><span class="stat__fig">5,065</span><span class="stat__label">Population · 2,547 male, 2,518 female</span></div>
+            <div class="stat"><span class="stat__fig">1,400</span><span class="stat__label">Households</span></div>
+            <div class="stat"><span class="stat__fig">66.01%</span><span class="stat__label">Literacy</span></div>
+            <div class="stat"><span class="stat__fig">~4 km</span><span class="stat__label">From Mylavaram</span></div>
+          </section>
+        </section>
+
+        <section class="section" id="calculator" data-nav="Calculator">
+          <div class="head">
+            <p class="head__eyebrow">Solar Savings &amp; Subsidy Calculator</p>
+            <h2>Enter your usage and see what a rooftop plant would save.</h2>
+            <p class="head__sub">Results update as you type.</p>
+          </div>
+          <div class="x-calc">
+            <div>
+              <form class="x-panel" id="calc" onsubmit="return false">
+                <div class="x-try">
+                  <button type="button" class="btn" id="try-example">Example</button>
+                  <button type="button" class="btn" id="try-350">Try 350 units</button>
+                </div>
+                <div class="x-field">
+                  <div class="x-row"><label for="usage" id="usage-lbl">Average monthly use, units (kWh)</label><button type="button" class="x-reset" id="mode-toggle" aria-pressed="false">Enter bill in ₹ instead</button></div>
+                  <input type="text" id="usage" value="200" inputmode="decimal" autocomplete="off" />
+                  <small id="usage-note">About ₹1,200 a month at your tariff</small>
+                </div>
+                <div class="x-field">
+                  <label for="tariff">Electricity tariff, ₹ per unit</label>
+                  <input type="text" id="tariff" value="6" inputmode="decimal" autocomplete="off" />
+                  <small>Example rate, check your bill</small>
+                </div>
+                <div class="x-field">
+                  <label for="cost">Installation cost per kW, ₹</label>
+                  <input type="text" id="cost" value="60000" inputmode="decimal" autocomplete="off" />
+                  <small>Example only, take a quote from a registered vendor</small>
+                </div>
+                <div class="x-field">
+                  <div class="x-row"><label for="kw">Plant size</label><output id="kw-out" for="kw">3 kW</output></div>
+                  <input type="range" id="kw" min="1" max="10" step="1" value="2" />
+                  <small id="kw-note">Suggested for your usage. Drag to try another size.</small>
+                  <button type="button" class="x-reset" id="kw-reset" hidden>Back to suggested size</button>
+                </div>
+              </form>
+              <figure class="x-photo">
+                <img src="photo3.jpg" alt="A rooftop solar plant on a house in Chandragudem" />
+                <figcaption>A rooftop solar plant in Chandragudem</figcaption>
+              </figure>
+            </div>
+            <div>
+              <div class="x-out" aria-live="polite">
+                <div class="x-wide"><span>25-year saving, approx.</span><b id="o-25">₹0</b></div>
+                <div><span>Suggested size</span><b id="o-size">2 kW</b><span id="o-band">150–300 units: 2–3 kW</span></div>
+                <div><span>Subsidy</span><b id="o-sub">₹0</b><p class="x-note" id="n-sub" hidden>Subsidy is capped at ₹78,000 for 3 kW and above.</p></div>
+                <div><span>Net cost after subsidy</span><b id="o-net">₹0</b></div>
+                <div><span>Payback period</span><b id="o-pay">0 yrs</b></div>
+                <div><span>Monthly saving</span><b id="o-month">₹0</b><span id="o-gen">Generates ~240 units</span><p class="x-note" id="n-gen" hidden>Your plant makes more than you use, so savings are limited by your usage. Extra units go to the grid (net metering).</p></div>
+                <div><span>Yearly saving</span><b id="o-year">₹0</b></div>
+              </div>
+              <p class="fineprint" style="margin-top: 12px">Generation is taken as about 120 units per kW per month: approximate; actual output depends on sunlight and panel condition.</p>
+              <p class="fineprint">Estimates for awareness only. Rates from pmsuryaghar.gov.in; costs vary by vendor.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="schemes" data-nav="Schemes">
+          <div class="head">
+            <p class="head__eyebrow">Government schemes</p>
+            <h2>Two schemes cover homes and farms.</h2>
+          </div>
+          <div class="cards">
+            <div>
+              <h3>PM Surya Ghar: Muft Bijli Yojana</h3>
+              <p>Subsidy for rooftop solar on houses.</p>
+              <ul>
+                <li>₹30,000 per kW for the first 2 kW</li>
+                <li>₹18,000 per kW for additional capacity up to 3 kW</li>
+                <li>Capped at ₹78,000 for 3 kW and above</li>
+              </ul>
+            </div>
+            <div>
+              <h3>PM-KUSUM</h3>
+              <p>For farmers to install solar pumps and grid-connected solar on farmland. The cost is shared by the Centre, the State and the farmer.</p>
+            </div>
+          </div>
+          <h3 style="font: var(--type-heading)">How to apply for PM Surya Ghar</h3>
+          <div class="steps">
+            <article class="step">
+              <div class="step__intro"><p class="step__num">01</p><p class="step__eyebrow">Portal</p></div>
+              <div><h3>Visit pmsuryaghar.gov.in</h3></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">02</p><p class="step__eyebrow">Consumer page</p></div>
+              <div><h3>Select Apply Now (or Consumer Login)</h3></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">03</p><p class="step__eyebrow">Verify</p></div>
+              <div><h3>Enter your mobile number</h3><p>Use the registered consumer mobile number, fill the captcha, accept the guidelines and press Verify.</p></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">04</p><p class="step__eyebrow">Log in</p></div>
+              <div><h3>Enter the mobile OTP</h3></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">05</p><p class="step__eyebrow">Profile</p></div>
+              <div><h3>Fill your profile and Save</h3><p>Name, email, address, state, district and PIN code.</p></div>
+            </article>
+            <article class="step">
+              <div class="step__intro"><p class="step__num">06</p><p class="step__eyebrow">Apply</p></div>
+              <div><h3>Apply for Solar Rooftop</h3><p>Choose state, district and electricity distribution company, enter your consumer account number, press Fetch Details, then fill the application.</p></div>
+            </article>
+          </div>
+          <div class="links"><a class="btn" href="https://pmsuryaghar.gov.in/" target="_blank" rel="noopener">Apply on PM Surya Ghar</a></div>
+        </section>
+
+        <section class="section" id="problem" data-nav="Problem">
+          <div class="head">
+            <p class="head__eyebrow">The problem we found</p>
+            <h2>Plenty of sunlight, but few people use solar.</h2>
+          </div>
+          <div class="cards">
+            <div><h3>Frequent power cuts</h3></div>
+            <div><h3>Rising electricity bills</h3></div>
+            <div><h3>High installation cost</h3></div>
+            <div><h3>Low awareness</h3><p>And no local technicians.</p></div>
+            <div><h3>No scheme information</h3><p>People had not heard of the subsidies.</p></div>
+            <div><h3>Diesel pumps</h3><p>Pollution and fuel cost on the farms.</p></div>
+          </div>
+        </section>
+
+        <section class="section" id="objectives" data-nav="Objectives">
+          <div class="head"><p class="head__eyebrow">Our objectives</p><h2>Five things we set out to do.</h2></div>
+          <div class="prose">
+            <ul>
+              <li>Promote awareness of solar energy.</li>
+              <li>Encourage rooftop panels, solar water heaters, solar pumps and solar street lights.</li>
+              <li>Reduce dependence on grid power and diesel.</li>
+              <li>Explain the government schemes.</li>
+              <li>Build community participation.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section" id="work" data-nav="Timeline">
+          <div class="head"><p class="head__eyebrow">What we did</p><h2>Six weeks in the village, 14 May to 29 June 2026.</h2></div>
+          <ol class="timeline">
+            <li><p class="timeline__when">Week 1 · 14-05 to 20-05</p><div class="timeline__what"><ul><li>Met the sarpanch and village leaders</li><li>Door-to-door visits and talks</li><li>Studied power use and bills</li></ul></div></li>
+            <li><p class="timeline__when">Week 2 · 21-05 to 27-05</p><div class="timeline__what"><ul><li>Explained panels, inverters and batteries</li><li>Live demo</li><li>On-grid vs off-grid</li></ul></div></li>
+            <li><p class="timeline__when">Week 3 · 28-05 to 03-06</p><div class="timeline__what"><ul><li>Solar pump talks with farmers</li><li>Diesel vs solar comparison</li><li>Field visits</li></ul></div></li>
+            <li><p class="timeline__when">Week 4 · 04-06 to 10-06</p><div class="timeline__what"><ul><li>Posters in Telugu</li><li>Community awareness workshop</li></ul></div></li>
+            <li><p class="timeline__when">Week 5 · 16-06 to 22-06</p><div class="timeline__what"><ul><li>Awareness booklet</li><li>Explained PM Surya Ghar and PM-KUSUM</li><li>Helped with application steps</li></ul></div></li>
+            <li><p class="timeline__when">Week 6 · 23-06 to 29-06</p><div class="timeline__what"><ul><li>Solar safety and maintenance talk</li><li>Feedback discussions</li><li>Final review meeting</li></ul></div></li>
+          </ol>
+        </section>
+
+        <section class="section" id="observations" data-nav="Findings">
+          <div class="head">
+            <p class="head__eyebrow">Field observations</p>
+            <h2>Cost was the main worry; homes and farm pumps drew the most interest.</h2>
+            <p class="head__sub">From conversations during village visits.</p>
+          </div>
+          <div class="cards">
+            <div><h3>Awareness</h3><p>Many knew solar only as panels; few knew it cuts bills.</p></div>
+            <div><h3>Uses</h3><p>Most interest in home use and solar pumps for farms.</p></div>
+            <div><h3>Barriers</h3><p>High cost was the main worry, then lack of subsidy information.</p></div>
+            <div><h3>Preferred</h3><p>Rooftop panels and solar pumps were asked about most.</p></div>
+          </div>
+        </section>
+
+        <section class="section" id="basics" data-nav="Basics">
+          <div class="head"><p class="head__eyebrow">Solar basics &amp; myths</p><h2>Questions we heard most, answered.</h2></div>
+          <div class="x-faq">
+            <details><summary>How does a solar panel work?</summary><p>Photovoltaic (PV) cells turn sunlight into DC power. An inverter converts it to AC for your home.</p></details>
+            <details><summary>On-grid, off-grid or hybrid?</summary><p>On-grid connects to the power line and has no battery. Off-grid runs on a battery. Hybrid has both.</p></details>
+            <details><summary>What is net metering?</summary><p>Extra power your panels make goes to the grid, and your bill reduces.</p></details>
+            <details><summary>How long do panels last?</summary><p>About 25 years. Just keep them clean.</p></details>
+            <details><summary>Myth: solar does not work on cloudy days</summary><p>It does work, with lower output.</p></details>
+            <details><summary>Myth: solar is only for the rich</summary><p>The subsidy covers a big part of the cost for small systems.</p></details>
+          </div>
+        </section>
+
+        <section class="section" id="challenges" data-nav="Challenges">
+          <div class="head"><p class="head__eyebrow">Challenges</p><h2>What got in the way, and how we solved it.</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Challenge</th><th scope="col">How we solved it</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Busy farmers</th><td>Visited in the mornings and evenings</td></tr>
+                <tr><th scope="row">Technical terms</th><td>Simple Telugu with pictures</td></tr>
+                <tr><th scope="row">Fear of cost</th><td>Showed the subsidies and savings</td></tr>
+                <tr><th scope="row">Trust issues</th><td>College ID, permission letter, sarpanch support</td></tr>
+                <tr><th scope="row">Low turnout</th><td>Posters, word of mouth, meetings at the temple</td></tr>
+                <tr><th scope="row">Summer heat</th><td>Worked in cooler hours</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" id="gallery" data-nav="Gallery">
+          <div class="head">
+            <p class="head__eyebrow">Gallery</p>
+            <h2>In the field at Chandragudem.</h2>
+            <p class="head__sub">Geo-tagged photos, 27-05-2026.</p>
+          </div>
+          <div class="x-gal">
+            <figure><img src="photo0.jpg" alt="The team with a family during a household visit" /><figcaption>With a family during a household visit</figcaption></figure>
+            <figure><img src="photo1.jpg" alt="The team talking with a shopkeeper" loading="lazy" /><figcaption>Talking with a shopkeeper</figcaption></figure>
+            <figure><img src="photo2.jpg" alt="The team on a rooftop with a resident near solar panels" loading="lazy" /><figcaption>Rooftop solar visit with a resident</figcaption></figure>
+            <figure><img src="photo3.jpg" alt="A rooftop solar plant in the village" loading="lazy" /><figcaption>Rooftop solar plant in the village</figcaption></figure>
+            <figure><img src="photo4.jpg" alt="The team with village residents" loading="lazy" /><figcaption>With village residents</figcaption></figure>
+            <figure><img src="photo5.jpg" alt="The team with an elderly resident during a household visit" loading="lazy" /><figcaption>Household visit</figcaption></figure>
+          </div>
+        </section>
+
+        <section class="section" id="outcomes" data-nav="Outcomes">
+          <div class="head"><p class="head__eyebrow">Outcomes</p><h2>Myths cleared, interest raised, and four next steps for the village.</h2></div>
+          <div class="cards">
+            <div>
+              <h3>What changed</h3>
+              <ul>
+                <li>Families learnt how solar saves money</li>
+                <li>Myths were cleared</li>
+                <li>Families and farmers became interested in rooftop solar and pumps</li>
+                <li>Scheme knowledge shared through a booklet</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Recommendations</h3>
+              <ul>
+                <li>A panchayat help desk for applications</li>
+                <li>Train local youth as solar technicians</li>
+                <li>Solar on the school and panchayat office</li>
+                <li>Solar street lights</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="foot">
+        <p>Community Service Project, Dept. of CSE, Lakireddy Bali Reddy College of Engineering (Autonomous), Mylavaram, affiliated to JNTUK. Guide: Mr. D. Anil Kumar, Sr. Assistant Professor, Dept. of CSE. Supports SDG 7 (Affordable and Clean Energy) and SDG 13 (Climate Action).</p>
+        <nav aria-label="Back to sections" data-auto></nav>
+        <a class="badge" href="https://hark.com/" target="_blank" rel="noopener"><span class="hark-mark"></span><span>built by hark</span></a>
+      </footer>
+    </div>
+    <script src="hark.js"></script>
+    <script>
+      function xCalcSetup() {
+        var $ = function (id) { return document.getElementById(id); };
+        if (!$("calc") || !$("usage")) return;
+        var mode = "units";
+        var override = null;
+        var last = null;
+        var rs = function (n) { return "₹" + Math.round(n).toLocaleString("en-IN"); };
+        var num = function (el) {
+          var raw = String((el && el.value) || "").replace(/[\s₹]/g, "");
+          var parts = raw.split(",");
+          raw = parts.length === 2 && parts[1].length !== 3 && raw.indexOf(".") < 0 ? parts.join(".") : parts.join("");
+          raw = raw.replace(/[^0-9.]/g, "");
+          var v = parseFloat(raw);
+          return isFinite(v) && v > 0 ? v : 0;
+        };
+        function flash() {
+          var cards = document.querySelectorAll(".x-out > div");
+          for (var i = 0; i < cards.length; i++) {
+            var c = cards[i];
+            c.classList.remove("x-flash");
+            void c.offsetWidth;
+            c.classList.add("x-flash");
+          }
+        }
+
+        function suggest(u) {
+          if (u <= 150) return { kw: u <= 75 ? 1 : 2, band: "0–150 units: 1–2 kW" };
+          if (u <= 300) return { kw: u > 225 ? 3 : 2, band: "150–300 units: 2–3 kW" };
+          return { kw: Math.max(3, Math.ceil(u / 120)), band: "Above 300 units: 3 kW or more" };
+        }
+        function subsidy(kw) {
+          if (kw >= 3) return 78000;
+          return kw <= 2 ? kw * 30000 : 60000 + (kw - 2) * 18000;
+        }
+
+        function update() {
+          try { render(); } catch (e) { if (window.console) console.error("Calculator update failed", e); }
+        }
+
+        function render() {
+          var tariff = num($("tariff"));
+          var input = num($("usage"));
+          var units = mode === "units" ? input : (tariff ? input / tariff : 0);
+          $("usage-note").textContent = mode === "units"
+            ? "About " + rs(units * tariff) + " a month at your tariff"
+            : "About " + Math.round(units).toLocaleString("en-IN") + " units a month at your tariff";
+          var s = suggest(units);
+          var kw = override || Math.min(10, s.kw);
+          $("kw").value = kw;
+          $("kw-out").textContent = kw + " kW";
+          $("kw-note").textContent = override ? "Your choice. Suggested: " + s.kw + " kW." : "Suggested for your usage. Drag to try another size.";
+          $("kw-reset").hidden = !override;
+
+          var sub = subsidy(kw);
+          var gen = kw * 120;
+          var monthly = Math.min(gen, units) * tariff;
+          var yearly = monthly * 12;
+          var net = Math.max(0, kw * num($("cost")) - sub);
+          var life = yearly * 25 - net;
+
+          $("o-size").textContent = s.kw + " kW";
+          $("o-band").textContent = s.band;
+          $("o-sub").textContent = rs(sub);
+          $("o-net").textContent = rs(net);
+          $("o-month").textContent = rs(monthly);
+          $("o-gen").textContent = kw + " kW makes ~" + gen.toLocaleString("en-IN") + " units";
+          $("o-year").textContent = rs(yearly);
+          $("o-pay").textContent = yearly > 0 ? (net / yearly).toFixed(1) + " yrs" : "—";
+          $("o-25").textContent = (life < 0 ? "−" : "") + rs(Math.abs(life));
+          $("n-gen").hidden = !(units > 0 && gen > units);
+          $("n-sub").hidden = !(kw >= 3);
+
+          var snap = [mode, units, tariff, kw, num($("cost"))].join("|");
+          if (last !== null && snap !== last) flash();
+          last = snap;
+        }
+
+        function fill(units) {
+          if (mode !== "units") {
+            mode = "units";
+            $("mode-toggle").setAttribute("aria-pressed", "false");
+            $("mode-toggle").textContent = "Enter bill in ₹ instead";
+            $("usage-lbl").textContent = "Average monthly use, units (kWh)";
+          }
+          $("usage").value = units;
+          $("tariff").value = 6;
+          $("cost").value = 60000;
+          override = null;
+          update();
+        }
+
+        function setMode(m) {
+          if (m === mode) return;
+          var tariff = num($("tariff"));
+          var v = num($("usage"));
+          if (tariff) $("usage").value = m === "bill" ? Math.round(v * tariff) : Math.round(v / tariff);
+          mode = m;
+          $("mode-toggle").setAttribute("aria-pressed", m === "bill");
+          $("mode-toggle").textContent = m === "units" ? "Enter bill in ₹ instead" : "Enter units instead";
+          $("usage-lbl").textContent = m === "units" ? "Average monthly use, units (kWh)" : "Average monthly bill, ₹";
+          update();
+        }
+
+        function onKw() {
+          var v = parseInt($("kw").value, 10);
+          override = isFinite(v) && v > 0 ? v : null;
+          update();
+        }
+
+        $("mode-toggle").addEventListener("click", function () { setMode(mode === "units" ? "bill" : "units"); });
+        ["usage", "tariff", "cost"].forEach(function (id) {
+          ["input", "change", "keyup", "blur"].forEach(function (ev) { $(id).addEventListener(ev, update); });
+        });
+        $("kw").addEventListener("input", onKw);
+        $("kw").addEventListener("change", onKw);
+        $("kw-reset").addEventListener("click", function () { override = null; update(); });
+        $("try-example").addEventListener("click", function () { fill(200); });
+        $("try-350").addEventListener("click", function () { fill(350); });
+        update();
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", xCalcSetup);
+      else xCalcSetup();
+    </script>
+  </body>
+</html>
